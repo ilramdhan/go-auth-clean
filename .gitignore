@@ -1,0 +1,40 @@
+# Secrets / env lokal (.env.example tetap di-commit)
+.env
+.env.*
+!.env.example
+
+# Build artefact
+/bin/
+/api
+/promote
+/dist/
+*.exe
+*.test
+__debug_bin*
+
+# Coverage / profiling
+coverage.out
+coverage.html
+*.out
+*.coverprofile
+*.prof
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Temp files
+tmp/
+*.tmp
+*.swp
+*.swo
+*~
+*.bak
+*.orig
+
+# Lokal lainnya
+.legacy-backup/
+.claude/settings.local.json
