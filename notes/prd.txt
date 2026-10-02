@@ -1,0 +1,128 @@
+Keputusan yang sangat tepat! Memulai dengan REST API atau HTTP standar menggunakan Clean Architecture adalah cara terbaik sebelum melompat ke gRPC.
+
+Dalam Clean Architecture, gRPC atau HTTP REST hanyalah Delivery Layer (lapisan antarmuka). Jika struktur Usecase (bisnis logik) dan Repository (database) Anda sudah rapi, transisi dari REST ke gRPC nanti hanya tinggal mengganti lapisan terluarnya saja tanpa menyentuh core logic sama sekali. Untuk meniru pendekatan gRPC ("contract-first"), kita akan membuat struktur Data Transfer Object (DTO) Request/Response yang sangat ketat, mirip seperti kita mendefinisikan Protobuf.
+
+Berikut adalah roadmap fase pengerjaannya, dimulai dari rancangan database (ERD).
+
+Fase Pengerjaan (Roadmap)
+Kita akan memecah pembelajaran ini menjadi langkah-langkah yang terukur agar Anda bisa memahami fundamentalnya lapis demi lapis:
+
+Fase 1: ERD & Setup Infrastruktur (Kita mulai dari sini)
+
+Merancang struktur database (PostgreSQL/MySQL).
+
+Inisialisasi project Go (go mod init).
+
+Setup folder structure (Domain, Repository, Usecase, Delivery).
+
+Setup koneksi database dan migrasi.
+
+Fase 2: Foundational Authentication
+
+Membuat layer Domain (Entity) dan Repository untuk User.
+
+Membuat fitur Register (Hashing password menggunakan bcrypt atau argon2).
+
+Membuat fitur Login dasar (Validasi password).
+
+Implementasi validasi input (menggunakan library go-playground/validator).
+
+Fase 3: JWT & Session Management (Advanced Auth)
+
+Generate Access Token (JWT) dan Refresh Token (Opaque string, disimpan di DB).
+
+Membuat middleware otentikasi untuk memproteksi endpoint.
+
+Fitur Logout (menghapus/revoke session dari database).
+
+Fase 4: Security Layer & Middleware
+
+Fitur Update Password.
+
+Implementasi Rate Limiting (membatasi jumlah request per IP).
+
+Implementasi proteksi Brute-force (blokir IP/User sementara jika gagal login berturut-turut).
+
+Fase 5: OTP & Forgot Password
+
+Merancang flow forgot password.
+
+Generate OTP dan simpan ke database dengan waktu kedaluwarsa (expiry time).
+
+Simulasi pengiriman kode OTP (print ke terminal dulu, integrasi SMTP email menyusul).
+
+Verifikasi OTP dan reset password.
+
+Fase 1: Entity Relationship Diagram (ERD) Lengkap
+Untuk mendukung semua fitur di atas (termasuk session dan security), kita membutuhkan setidaknya 3 tabel utama.
+
+1. Tabel users
+Pusat data pengguna.
+
+id (UUID/ULID, Primary Key)
+
+email (VARCHAR, Unique, Indexed)
+
+password_hash (VARCHAR) - Menyimpan password yang sudah di-hash.
+
+full_name (VARCHAR)
+
+is_active (BOOLEAN) - Bisa untuk soft-ban atau verifikasi.
+
+failed_login_attempts (INT) - Untuk proteksi brute-force.
+
+locked_until (TIMESTAMP) - Waktu penalti jika brute-force terdeteksi.
+
+created_at (TIMESTAMP)
+
+updated_at (TIMESTAMP)
+
+2. Tabel sessions
+Untuk mengelola Refresh Token dan fitur Logout. Mengapa tidak JWT saja? Karena JWT tidak bisa dibatalkan (revoke) sebelum masa berlakunya habis. Dengan tabel session, kita bisa mematikan akses user secara real-time.
+
+id (UUID/ULID, Primary Key)
+
+user_id (UUID, Foreign Key ke users.id)
+
+refresh_token (VARCHAR, Unique, Indexed)
+
+is_revoked (BOOLEAN) - True jika user logout.
+
+client_ip (VARCHAR) - Untuk melacak dari mana user login.
+
+user_agent (VARCHAR) - Device yang digunakan login.
+
+expires_at (TIMESTAMP) - Kapan refresh token ini hangus.
+
+created_at (TIMESTAMP)
+
+3. Tabel otps (Menyusul untuk Forgot Password)
+Untuk menyimpan kode OTP sementara.
+
+id (UUID, Primary Key)
+
+user_id (UUID, Foreign Key ke users.id)
+
+code (VARCHAR) - Kode unik OTP (misal: 6 digit angka).
+
+type (VARCHAR) - Misal: "FORGOT_PASSWORD", "VERIFY_EMAIL".
+
+is_used (BOOLEAN) - True jika sudah dipakai.
+
+expires_at (TIMESTAMP) - Batas waktu OTP (misal: 15 menit).
+
+created_at (TIMESTAMP)
+
+Bagaimana dengan Clean Architecture-nya?
+Nanti kita akan menstruktur folder seperti ini (pendekatan yang sangat ramah untuk transisi ke gRPC di masa depan):
+
+Plaintext
+/cmd
+  /api          # Entry point aplikasi (main.go)
+/internal
+  /domain       # Definisi Struct (Entity), Interface Repository & Usecase
+  /repository   # Implementasi query database (Postgres/MySQL)
+  /usecase      # Bisnis logik (Hashing, Validasi, Aturan Bisnis)
+  /delivery     # HTTP Handler (REST), nanti bisa ditambah /grpc di sini
+  /middleware   # Rate limiter, Auth guard
+/pkg            # Utility/Helper (JWT, Password Hasher, Response formatter)
