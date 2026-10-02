@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+.git
+.github
+.idea
+.vscode
+.claude
+.legacy-backup
+bin
+coverage.out
+*.test
+notes
+docs/*.md
+Dockerfile
+docker-compose.yml
