@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS transaction_tags;
+DROP TABLE IF EXISTS tags;
