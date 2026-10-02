@@ -1,0 +1,6975 @@
+basePath: /api/v1
+consumes:
+- application/json
+definitions:
+  ErrorBody:
+    properties:
+      code:
+        example: VALIDATION_FAILED
+        type: string
+      details:
+        items:
+          $ref: '#/definitions/FieldDetail'
+        type: array
+      message:
+        example: input tidak valid
+        type: string
+    type: object
+  ErrorResponse:
+    properties:
+      error:
+        $ref: '#/definitions/ErrorBody'
+      request_id:
+        example: 0192f0c1-7b3a-7c4e-9d2a-1f2e3d4c5b6a
+        type: string
+    type: object
+  FieldDetail:
+    properties:
+      field:
+        example: email
+        type: string
+      message:
+        example: harus berupa email yang valid
+        type: string
+    type: object
+  auth.APIKeyListEnvelope:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/auth.APIKeyResponse'
+        type: array
+    type: object
+  auth.APIKeyResponse:
+    properties:
+      active:
+        example: true
+        type: boolean
+      created_at:
+        type: string
+      expires_at:
+        type: string
+      id:
+        format: uuid
+        type: string
+      last_used_at:
+        type: string
+      name:
+        example: CI pipeline
+        type: string
+      prefix:
+        example: ab12cd34
+        type: string
+      revoked_at:
+        type: string
+      scopes:
+        example:
+        - read
+        items:
+          type: string
+        type: array
+    type: object
+  auth.AcceptedEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/auth.AcceptedResponse'
+    type: object
+  auth.AcceptedResponse:
+    properties:
+      message:
+        example: jika email terdaftar, kode telah dikirim
+        type: string
+    type: object
+  auth.ChangePasswordRequest:
+    properties:
+      new_password:
+        maxLength: 72
+        minLength: 8
+        type: string
+      old_password:
+        maxLength: 72
+        type: string
+    required:
+    - new_password
+    - old_password
+    type: object
+  auth.CreateAPIKeyRequest:
+    properties:
+      expires_in_days:
+        description: ExpiresInDays 0/kosong = default server (90 hari). Maksimal 365.
+        example: 90
+        maximum: 365
+        minimum: 1
+        type: integer
+      name:
+        example: CI pipeline
+        maxLength: 100
+        minLength: 1
+        type: string
+      scopes:
+        example:
+        - read
+        items:
+          type: string
+        maxItems: 2
+        minItems: 1
+        type: array
+    required:
+    - name
+    - scopes
+    type: object
+  auth.CreatedAPIKeyEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/auth.CreatedAPIKeyResponse'
+    type: object
+  auth.CreatedAPIKeyResponse:
+    properties:
+      active:
+        example: true
+        type: boolean
+      created_at:
+        type: string
+      expires_at:
+        type: string
+      id:
+        format: uuid
+        type: string
+      key:
+        example: gac_live_ab12cd34_0123456789abcdefghijABCDEFGHIJ01
+        type: string
+      last_used_at:
+        type: string
+      name:
+        example: CI pipeline
+        type: string
+      prefix:
+        example: ab12cd34
+        type: string
+      revoked_at:
+        type: string
+      scopes:
+        example:
+        - read
+        items:
+          type: string
+        type: array
+    type: object
+  auth.DeleteAccountRequest:
+    properties:
+      password:
+        maxLength: 72
+        type: string
+    required:
+    - password
+    type: object
+  auth.DisableMFARequest:
+    properties:
+      code:
+        example: "123456"
+        maxLength: 32
+        minLength: 6
+        type: string
+      password:
+        maxLength: 72
+        type: string
+    required:
+    - code
+    - password
+    type: object
+  auth.EmailRequest:
+    properties:
+      email:
+        example: budi@example.com
+        maxLength: 254
+        type: string
+    required:
+    - email
+    type: object
+  auth.IdentityListEnvelope:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/auth.IdentityResponse'
+        type: array
+    type: object
+  auth.IdentityResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        example: budi@gmail.com
+        type: string
+      provider:
+        example: google
+        type: string
+    type: object
+  auth.LoginEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/auth.LoginResponse'
+    type: object
+  auth.LoginMFARequest:
+    properties:
+      code:
+        example: "123456"
+        maxLength: 32
+        minLength: 6
+        type: string
+      mfa_token:
+        maxLength: 2048
+        type: string
+    required:
+    - code
+    - mfa_token
+    type: object
+  auth.LoginRequest:
+    properties:
+      email:
+        example: budi@example.com
+        maxLength: 254
+        type: string
+      password:
+        example: Rahasia123!
+        maxLength: 72
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  auth.LoginResponse:
+    properties:
+      access_token:
+        example: eyJhbGciOiJIUzI1NiIs...
+        type: string
+      expires_in:
+        example: 900
+        type: integer
+      mfa_required:
+        description: |-
+          MFARequired selalu false di sini; bila 2FA aktif server membalas 200 MFAChallengeEnvelope
+          (mfa_required=true + mfa_token) yang dilanjutkan ke POST /auth/login/2fa.
+        example: false
+        type: boolean
+      refresh_token:
+        type: string
+      refresh_token_expires_at:
+        type: string
+      session_id:
+        description: SessionID adalah id device session (sama dengan id di GET /users/me/sessions).
+        format: uuid
+        type: string
+      token_type:
+        example: Bearer
+        type: string
+      user:
+        $ref: '#/definitions/auth.UserResponse'
+    type: object
+  auth.LogoutAllRequest:
+    properties:
+      include_current:
+        description: IncludeCurrent=true ikut mencabut sesi yang sedang dipakai.
+        example: false
+        type: boolean
+    type: object
+  auth.MFACodeRequest:
+    properties:
+      code:
+        example: "123456"
+        type: string
+    required:
+    - code
+    type: object
+  auth.MFASetupEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/auth.MFASetupResponse'
+    type: object
+  auth.MFASetupResponse:
+    properties:
+      otpauth_uri:
+        example: otpauth://totp/go-auth-clean:budi@example.com?secret=...&issuer=go-auth-clean
+        type: string
+      secret:
+        example: JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP
+        type: string
+    type: object
+  auth.MFAStatusEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/auth.MFAStatusResponse'
+    type: object
+  auth.MFAStatusResponse:
+    properties:
+      enabled:
+        example: true
+        type: boolean
+      enabled_at:
+        type: string
+      pending:
+        example: false
+        type: boolean
+      recovery_codes_remaining:
+        example: 10
+        type: integer
+    type: object
+  auth.OAuthExchangeRequest:
+    properties:
+      code:
+        maxLength: 128
+        type: string
+    required:
+    - code
+    type: object
+  auth.OAuthStartEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/auth.OAuthStartResponse'
+    type: object
+  auth.OAuthStartResponse:
+    properties:
+      auth_url:
+        example: https://accounts.google.com/o/oauth2/v2/auth?...
+        type: string
+    type: object
+  auth.RecoveryCodesEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/auth.RecoveryCodesResponse'
+    type: object
+  auth.RecoveryCodesResponse:
+    properties:
+      recovery_codes:
+        example:
+        - abcde-fghij
+        - klmno-pqrst
+        items:
+          type: string
+        type: array
+    type: object
+  auth.RefreshRequest:
+    properties:
+      refresh_token:
+        maxLength: 512
+        type: string
+    required:
+    - refresh_token
+    type: object
+  auth.RegisterRequest:
+    properties:
+      email:
+        example: budi@example.com
+        maxLength: 254
+        type: string
+      full_name:
+        example: Budi Santoso
+        maxLength: 100
+        minLength: 1
+        type: string
+      password:
+        example: Rahasia123!
+        maxLength: 72
+        minLength: 8
+        type: string
+    required:
+    - email
+    - full_name
+    - password
+    type: object
+  auth.ResetPasswordRequest:
+    properties:
+      code:
+        example: "123456"
+        type: string
+      email:
+        example: budi@example.com
+        maxLength: 254
+        type: string
+      new_password:
+        example: RahasiaBaru123!
+        maxLength: 72
+        minLength: 8
+        type: string
+    required:
+    - code
+    - email
+    - new_password
+    type: object
+  auth.RoleRequest:
+    properties:
+      role:
+        enum:
+        - user
+        - admin
+        example: admin
+        type: string
+    required:
+    - role
+    type: object
+  auth.SecurityEventListEnvelope:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/auth.SecurityEventResponse'
+        type: array
+      meta:
+        $ref: '#/definitions/pagination.PageMeta'
+    type: object
+  auth.SecurityEventResponse:
+    properties:
+      client_ip:
+        example: 203.0.113.10
+        type: string
+      event_type:
+        example: login_succeeded
+        type: string
+      id:
+        format: uuid
+        type: string
+      metadata:
+        additionalProperties:
+          type: string
+        type: object
+      occurred_at:
+        type: string
+      outcome:
+        enum:
+        - success
+        - failure
+        example: success
+        type: string
+      user_agent:
+        example: Mozilla/5.0
+        type: string
+    type: object
+  auth.SessionListEnvelope:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/auth.SessionResponse'
+        type: array
+    type: object
+  auth.SessionResponse:
+    properties:
+      client_ip:
+        example: 203.0.113.10
+        type: string
+      created_at:
+        type: string
+      current:
+        example: true
+        type: boolean
+      expires_at:
+        type: string
+      id:
+        format: uuid
+        type: string
+      last_used_at:
+        type: string
+      user_agent:
+        example: Mozilla/5.0
+        type: string
+    type: object
+  auth.TokenEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/auth.TokenResponse'
+    type: object
+  auth.TokenResponse:
+    properties:
+      access_token:
+        example: eyJhbGciOiJIUzI1NiIs...
+        type: string
+      expires_in:
+        example: 900
+        type: integer
+      refresh_token:
+        type: string
+      refresh_token_expires_at:
+        type: string
+      session_id:
+        description: SessionID adalah id device session (sama dengan id di GET /users/me/sessions).
+        format: uuid
+        type: string
+      token_type:
+        example: Bearer
+        type: string
+    type: object
+  auth.UpdateProfileRequest:
+    properties:
+      full_name:
+        example: Budi S.
+        maxLength: 100
+        minLength: 1
+        type: string
+    type: object
+  auth.UserEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/auth.UserResponse'
+    type: object
+  auth.UserListEnvelope:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/auth.UserResponse'
+        type: array
+      meta:
+        $ref: '#/definitions/pagination.PageMeta'
+    type: object
+  auth.UserResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        example: budi@example.com
+        type: string
+      email_verified_at:
+        type: string
+      full_name:
+        example: Budi Santoso
+        type: string
+      has_password:
+        description: HasPassword false untuk akun yang dibuat via OAuth (belum set
+          password).
+        example: true
+        type: boolean
+      id:
+        example: 0192f0c1-7b3a-7c4e-9d2a-1f2e3d4c5b6a
+        format: uuid
+        type: string
+      last_login_at:
+        type: string
+      mfa_enabled:
+        example: false
+        type: boolean
+      roles:
+        description: Roles selalu memuat "user"; "admin" bila punya akses admin.
+        example:
+        - user
+        items:
+          type: string
+        type: array
+      status:
+        enum:
+        - pending_verification
+        - active
+        - suspended
+        example: active
+        type: string
+      updated_at:
+        type: string
+    type: object
+  auth.VerifyEmailEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/auth.VerifyEmailResponse'
+    type: object
+  auth.VerifyEmailRequest:
+    properties:
+      code:
+        example: "123456"
+        type: string
+      email:
+        example: budi@example.com
+        maxLength: 254
+        type: string
+    required:
+    - code
+    - email
+    type: object
+  auth.VerifyEmailResponse:
+    properties:
+      already_verified:
+        example: false
+        type: boolean
+      verified:
+        example: true
+        type: boolean
+    type: object
+  auth.WhoAmIEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/auth.WhoAmIResponse'
+    type: object
+  auth.WhoAmIResponse:
+    properties:
+      api_key_id:
+        format: uuid
+        type: string
+      auth_method:
+        enum:
+        - access_token
+        - api_key
+        example: api_key
+        type: string
+      roles:
+        example:
+        - user
+        items:
+          type: string
+        type: array
+      scopes:
+        example:
+        - read
+        items:
+          type: string
+        type: array
+      session_id:
+        format: uuid
+        type: string
+      user_id:
+        format: uuid
+        type: string
+    type: object
+  finance.AccountEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/finance.AccountResponse'
+    type: object
+  finance.AccountListEnvelope:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/finance.AccountResponse'
+        type: array
+    type: object
+  finance.AccountResponse:
+    properties:
+      allow_negative:
+        example: true
+        type: boolean
+      archived:
+        example: false
+        type: boolean
+      archived_at:
+        example: "2026-09-30T10:00:00Z"
+        type: string
+      balance:
+        example: "1465000"
+        type: string
+      created_at:
+        example: "2026-09-30T10:00:00Z"
+        type: string
+      currency:
+        example: IDR
+        type: string
+      id:
+        example: 0192f0c1-7b3a-7c4e-9d2a-1f2e3d4c5b6a
+        format: uuid
+        type: string
+      initial_balance:
+        example: "1500000"
+        type: string
+      name:
+        example: BCA
+        type: string
+      type:
+        enum:
+        - cash
+        - bank
+        - ewallet
+        - credit_card
+        example: bank
+        type: string
+      updated_at:
+        example: "2026-09-30T10:00:00Z"
+        type: string
+      version:
+        example: 3
+        type: integer
+    type: object
+  finance.AddMemberRequest:
+    properties:
+      email:
+        example: istri@example.com
+        maxLength: 254
+        type: string
+      role:
+        enum:
+        - viewer
+        - editor
+        type: string
+      user_id:
+        format: uuid
+        type: string
+    required:
+    - role
+    type: object
+  finance.AuditLogListEnvelope:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/finance.AuditLogResponse'
+        type: array
+      meta:
+        $ref: '#/definitions/pagination.PageMeta'
+    type: object
+  finance.AuditLogResponse:
+    properties:
+      action:
+        enum:
+        - create
+        - update
+        - delete
+        type: string
+      actor_id:
+        format: uuid
+        type: string
+      after:
+        type: object
+      before:
+        description: Before/After snapshot JSON entity (null untuk create/delete).
+        type: object
+      created_at:
+        type: string
+      entity:
+        enum:
+        - account
+        - transaction
+        - transfer
+        - account_member
+        type: string
+      entity_id:
+        format: uuid
+        type: string
+      id:
+        format: uuid
+        type: string
+    type: object
+  finance.BalanceDriftResponse:
+    properties:
+      account_id:
+        format: uuid
+        type: string
+      cached_balance:
+        example: "100000"
+        type: string
+      currency:
+        example: IDR
+        type: string
+      expected_balance:
+        example: "95000"
+        type: string
+    type: object
+  finance.BillEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/finance.BillResponse'
+    type: object
+  finance.BillListEnvelope:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/finance.BillResponse'
+        type: array
+    type: object
+  finance.BillResponse:
+    properties:
+      account_id:
+        format: uuid
+        type: string
+      amount:
+        example: "450000"
+        type: string
+      category_id:
+        format: uuid
+        type: string
+      created_at:
+        type: string
+      currency:
+        example: IDR
+        type: string
+      frequency:
+        example: monthly
+        type: string
+      id:
+        format: uuid
+        type: string
+      name:
+        example: Listrik PLN
+        type: string
+      next_due_date:
+        example: "2026-10-20"
+        type: string
+      overdue:
+        type: boolean
+      remind_days_before:
+        example: 3
+        type: integer
+      status:
+        enum:
+        - active
+        - paused
+        - done
+        type: string
+      updated_at:
+        type: string
+      version:
+        example: 1
+        type: integer
+    type: object
+  finance.BudgetEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/finance.BudgetResponse'
+    type: object
+  finance.BudgetListEnvelope:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/finance.BudgetResponse'
+        type: array
+    type: object
+  finance.BudgetResponse:
+    properties:
+      alert_threshold_pct:
+        example: 80
+        type: integer
+      amount:
+        example: "2000000"
+        type: string
+      category_id:
+        format: uuid
+        type: string
+      created_at:
+        type: string
+      currency:
+        example: IDR
+        type: string
+      id:
+        format: uuid
+        type: string
+      overspent:
+        example: false
+        type: boolean
+      period_month:
+        example: 2026-10
+        type: string
+      progress:
+        description: Progress persen pemakaian, 2 desimal.
+        example: "85.00"
+        type: string
+      remaining:
+        description: Remaining negatif = overspent.
+        example: "300000"
+        type: string
+      spent:
+        example: "1700000"
+        type: string
+      status:
+        enum:
+        - ok
+        - warning
+        - exceeded
+        example: warning
+        type: string
+      updated_at:
+        type: string
+      version:
+        example: 1
+        type: integer
+    type: object
+  finance.CashflowEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/finance.CashflowResponse'
+    type: object
+  finance.CashflowPointResponse:
+    properties:
+      expense:
+        example: "3500000"
+        type: string
+      income:
+        example: "10000000"
+        type: string
+      net:
+        example: "6500000"
+        type: string
+      period:
+        example: "2026-09-01"
+        type: string
+    type: object
+  finance.CashflowResponse:
+    properties:
+      currency:
+        example: IDR
+        type: string
+      granularity:
+        enum:
+        - day
+        - month
+        example: month
+        type: string
+      points:
+        items:
+          $ref: '#/definitions/finance.CashflowPointResponse'
+        type: array
+    type: object
+  finance.CategoryEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/finance.CategoryResponse'
+    type: object
+  finance.CategoryNodeResponse:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/finance.CategoryResponse'
+        type: array
+      color:
+        example: '#FF8800'
+        type: string
+      icon:
+        example: utensils
+        type: string
+      id:
+        example: 01920000-0000-7000-8000-000000000101
+        format: uuid
+        type: string
+      is_system:
+        example: true
+        type: boolean
+      name:
+        example: Makan & Minum
+        type: string
+      parent_id:
+        format: uuid
+        type: string
+      type:
+        enum:
+        - income
+        - expense
+        example: expense
+        type: string
+    type: object
+  finance.CategoryReportEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/finance.CategoryReportResponse'
+    type: object
+  finance.CategoryReportResponse:
+    properties:
+      currency:
+        example: IDR
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/finance.CategoryShareResponse'
+        type: array
+      type:
+        enum:
+        - income
+        - expense
+        example: expense
+        type: string
+    type: object
+  finance.CategoryResponse:
+    properties:
+      color:
+        example: '#FF8800'
+        type: string
+      icon:
+        example: utensils
+        type: string
+      id:
+        example: 01920000-0000-7000-8000-000000000101
+        format: uuid
+        type: string
+      is_system:
+        example: true
+        type: boolean
+      name:
+        example: Makan & Minum
+        type: string
+      parent_id:
+        format: uuid
+        type: string
+      type:
+        enum:
+        - income
+        - expense
+        example: expense
+        type: string
+    type: object
+  finance.CategoryShareResponse:
+    properties:
+      category_id:
+        example: 01920000-0000-7000-8000-000000000101
+        format: uuid
+        type: string
+      name:
+        example: Makan & Minum
+        type: string
+      percent:
+        example: "35.71"
+        type: string
+      total:
+        example: "1250000"
+        type: string
+    type: object
+  finance.CategoryTreeEnvelope:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/finance.CategoryNodeResponse'
+        type: array
+    type: object
+  finance.ContributeRequest:
+    properties:
+      amount:
+        example: "500000"
+        maxLength: 32
+        type: string
+      date:
+        example: "2026-10-01"
+        type: string
+      note:
+        maxLength: 500
+        type: string
+      transfer_id:
+        format: uuid
+        type: string
+    type: object
+  finance.ContributionEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/finance.ContributionResult'
+    type: object
+  finance.ContributionListEnvelope:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/finance.ContributionResponse'
+        type: array
+    type: object
+  finance.ContributionResponse:
+    properties:
+      amount:
+        example: "500000"
+        type: string
+      created_at:
+        type: string
+      currency:
+        example: IDR
+        type: string
+      date:
+        example: "2026-10-01"
+        type: string
+      goal_id:
+        format: uuid
+        type: string
+      id:
+        format: uuid
+        type: string
+      note:
+        type: string
+      transfer_id:
+        format: uuid
+        type: string
+    type: object
+  finance.ContributionResult:
+    properties:
+      contribution:
+        $ref: '#/definitions/finance.ContributionResponse'
+      goal:
+        $ref: '#/definitions/finance.GoalResponse'
+    type: object
+  finance.ConvertEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/finance.ConvertResponse'
+    type: object
+  finance.ConvertResponse:
+    properties:
+      from:
+        $ref: '#/definitions/finance.MoneyResponse'
+      to:
+        $ref: '#/definitions/finance.MoneyResponse'
+    type: object
+  finance.CreateAccountRequest:
+    properties:
+      allow_negative:
+        description: AllowNegative kosong = default per tipe (true untuk bank & credit_card).
+        example: false
+        type: boolean
+      currency:
+        description: Currency kosong = base currency user.
+        example: IDR
+        type: string
+      initial_balance:
+        example: "1500000"
+        maxLength: 32
+        type: string
+      name:
+        example: BCA
+        maxLength: 50
+        type: string
+      type:
+        enum:
+        - cash
+        - bank
+        - ewallet
+        - credit_card
+        example: bank
+        type: string
+    required:
+    - name
+    - type
+    type: object
+  finance.CreateBillRequest:
+    properties:
+      account_id:
+        description: AccountID/CategoryID default untuk transaksi saat bill dibayar.
+        format: uuid
+        type: string
+      amount:
+        example: "450000"
+        maxLength: 32
+        type: string
+      category_id:
+        format: uuid
+        type: string
+      currency:
+        example: IDR
+        type: string
+      due_date:
+        example: "2026-10-20"
+        type: string
+      frequency:
+        enum:
+        - once
+        - weekly
+        - monthly
+        - yearly
+        example: monthly
+        type: string
+      name:
+        example: Listrik PLN
+        maxLength: 100
+        type: string
+      remind_days_before:
+        description: RemindDaysBefore 0-30, default 3.
+        example: 3
+        maximum: 30
+        minimum: 0
+        type: integer
+    required:
+    - amount
+    - due_date
+    - frequency
+    - name
+    type: object
+  finance.CreateBudgetRequest:
+    properties:
+      alert_threshold_pct:
+        example: 80
+        maximum: 100
+        minimum: 1
+        type: integer
+      amount:
+        example: "2000000"
+        maxLength: 32
+        type: string
+      category_id:
+        example: 01920000-0000-7000-8000-000000000101
+        format: uuid
+        type: string
+      currency:
+        description: Currency kosong = base currency user.
+        example: IDR
+        type: string
+      period_month:
+        description: PeriodMonth "YYYY-MM"; kosong = bulan berjalan (timezone user).
+        example: 2026-10
+        type: string
+    required:
+    - amount
+    - category_id
+    type: object
+  finance.CreateCategoryRequest:
+    properties:
+      color:
+        example: '#A0522D'
+        maxLength: 7
+        type: string
+      icon:
+        example: coffee
+        maxLength: 30
+        type: string
+      name:
+        example: Kopi
+        maxLength: 50
+        type: string
+      parent_id:
+        example: 01920000-0000-7000-8000-000000000101
+        format: uuid
+        type: string
+      type:
+        enum:
+        - income
+        - expense
+        example: expense
+        type: string
+    required:
+    - name
+    - type
+    type: object
+  finance.CreateDebtRequest:
+    properties:
+      counterparty:
+        example: Budi
+        maxLength: 100
+        type: string
+      currency:
+        example: IDR
+        type: string
+      direction:
+        enum:
+        - payable
+        - receivable
+        type: string
+      due_date:
+        example: "2026-12-31"
+        type: string
+      note:
+        maxLength: 500
+        type: string
+      principal:
+        example: "1500000"
+        maxLength: 32
+        type: string
+      start_date:
+        example: "2026-10-01"
+        type: string
+    required:
+    - counterparty
+    - direction
+    - principal
+    - start_date
+    type: object
+  finance.CreateGoalRequest:
+    properties:
+      account_id:
+        format: uuid
+        type: string
+      currency:
+        description: Currency kosong = currency akun tertaut, atau base currency.
+        example: IDR
+        type: string
+      name:
+        example: Dana darurat
+        maxLength: 100
+        type: string
+      target:
+        example: "30000000"
+        maxLength: 32
+        type: string
+      target_date:
+        example: "2027-06-30"
+        type: string
+    required:
+    - name
+    - target
+    type: object
+  finance.CreateRateRequest:
+    properties:
+      as_of:
+        description: AsOf "YYYY-MM-DD", kurs berlaku mulai tanggal ini.
+        example: "2026-10-01"
+        type: string
+      base:
+        example: USD
+        type: string
+      quote:
+        example: IDR
+        type: string
+      rate:
+        example: "16250.5"
+        maxLength: 32
+        type: string
+    required:
+    - as_of
+    - base
+    - quote
+    - rate
+    type: object
+  finance.CreateRecurringRuleRequest:
+    properties:
+      account_id:
+        format: uuid
+        type: string
+      amount:
+        example: "186000"
+        maxLength: 32
+        type: string
+      category_id:
+        format: uuid
+        type: string
+      count:
+        example: 12
+        maximum: 1000
+        minimum: 1
+        type: integer
+      end_date:
+        description: EndDate dan Count saling eksklusif (opsional).
+        example: "2027-10-03"
+        type: string
+      frequency:
+        enum:
+        - daily
+        - weekly
+        - monthly
+        - yearly
+        example: monthly
+        type: string
+      interval:
+        example: 1
+        maximum: 365
+        minimum: 1
+        type: integer
+      note:
+        example: Netflix
+        maxLength: 255
+        type: string
+      start_date:
+        example: "2026-10-03"
+        type: string
+      type:
+        enum:
+        - income
+        - expense
+        example: expense
+        type: string
+    required:
+    - account_id
+    - amount
+    - category_id
+    - frequency
+    - start_date
+    - type
+    type: object
+  finance.CreateTagRequest:
+    properties:
+      color:
+        example: '#FF8800'
+        type: string
+      name:
+        example: liburan
+        maxLength: 40
+        type: string
+    required:
+    - name
+    type: object
+  finance.CreateTransactionRequest:
+    properties:
+      account_id:
+        example: 0192f0c1-7b3a-7c4e-9d2a-1f2e3d4c5b6a
+        format: uuid
+        type: string
+      amount:
+        example: "35000"
+        maxLength: 32
+        type: string
+      category_id:
+        example: 01920000-0000-7000-8000-000000000101
+        format: uuid
+        type: string
+      note:
+        example: Makan siang
+        maxLength: 1024
+        type: string
+      tag_ids:
+        description: TagIDs opsional, maksimal 10 tag milik user.
+        items:
+          format: uuid
+          type: string
+        maxItems: 10
+        type: array
+      transaction_date:
+        example: "2026-09-30"
+        type: string
+      type:
+        enum:
+        - income
+        - expense
+        example: expense
+        type: string
+    required:
+    - account_id
+    - amount
+    - category_id
+    - transaction_date
+    - type
+    type: object
+  finance.CreateTransferRequest:
+    properties:
+      amount:
+        example: "500000"
+        maxLength: 32
+        type: string
+      fee:
+        example: "6500"
+        maxLength: 32
+        type: string
+      from_account_id:
+        example: 0192f0c1-7b3a-7c4e-9d2a-1f2e3d4c5b6a
+        format: uuid
+        type: string
+      note:
+        example: Top up GoPay
+        maxLength: 1024
+        type: string
+      to_account_id:
+        example: 0192f0c1-7b3a-7c4e-9d2a-1f2e3d4c5b6c
+        format: uuid
+        type: string
+      to_amount:
+        description: ToAmount wajib bila currency akun tujuan berbeda (nominal yang
+          diterima).
+        example: "31.25"
+        maxLength: 32
+        type: string
+      transfer_date:
+        example: "2026-09-30"
+        type: string
+    required:
+    - amount
+    - from_account_id
+    - to_account_id
+    - transfer_date
+    type: object
+  finance.CurrencyListEnvelope:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/finance.CurrencyResponse'
+        type: array
+    type: object
+  finance.CurrencyResponse:
+    properties:
+      code:
+        example: IDR
+        type: string
+      minor_unit:
+        example: 0
+        type: integer
+      name:
+        example: Indonesian Rupiah
+        type: string
+      symbol:
+        example: Rp
+        type: string
+    type: object
+  finance.CurrencyTotalsResponse:
+    properties:
+      currency:
+        example: IDR
+        type: string
+      expense:
+        example: "3500000"
+        type: string
+      income:
+        example: "10000000"
+        type: string
+      net:
+        example: "6500000"
+        type: string
+    type: object
+  finance.DebtEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/finance.DebtResponse'
+    type: object
+  finance.DebtListEnvelope:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/finance.DebtResponse'
+        type: array
+    type: object
+  finance.DebtPaymentEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/finance.DebtPaymentResult'
+    type: object
+  finance.DebtPaymentListEnvelope:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/finance.DebtPaymentResponse'
+        type: array
+    type: object
+  finance.DebtPaymentResponse:
+    properties:
+      amount:
+        example: "500000"
+        type: string
+      created_at:
+        type: string
+      currency:
+        example: IDR
+        type: string
+      date:
+        example: "2026-10-15"
+        type: string
+      debt_id:
+        format: uuid
+        type: string
+      id:
+        format: uuid
+        type: string
+      note:
+        type: string
+      transaction_id:
+        format: uuid
+        type: string
+    type: object
+  finance.DebtPaymentResult:
+    properties:
+      debt:
+        $ref: '#/definitions/finance.DebtResponse'
+      payment:
+        $ref: '#/definitions/finance.DebtPaymentResponse'
+    type: object
+  finance.DebtResponse:
+    properties:
+      counterparty:
+        example: Budi
+        type: string
+      created_at:
+        type: string
+      currency:
+        example: IDR
+        type: string
+      direction:
+        enum:
+        - payable
+        - receivable
+        type: string
+      due_date:
+        example: "2026-12-31"
+        type: string
+      id:
+        format: uuid
+        type: string
+      note:
+        type: string
+      paid:
+        example: "500000"
+        type: string
+      principal:
+        example: "1500000"
+        type: string
+      remaining:
+        example: "1000000"
+        type: string
+      start_date:
+        example: "2026-10-01"
+        type: string
+      status:
+        enum:
+        - open
+        - settled
+        type: string
+      updated_at:
+        type: string
+      version:
+        example: 1
+        type: integer
+    type: object
+  finance.GoalEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/finance.GoalResponse'
+    type: object
+  finance.GoalListEnvelope:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/finance.GoalResponse'
+        type: array
+    type: object
+  finance.GoalResponse:
+    properties:
+      account_id:
+        format: uuid
+        type: string
+      created_at:
+        type: string
+      currency:
+        example: IDR
+        type: string
+      id:
+        format: uuid
+        type: string
+      monthly_needed:
+        example: "2000000"
+        type: string
+      name:
+        example: Dana darurat
+        type: string
+      progress:
+        example: "40.00"
+        type: string
+      remaining:
+        example: "18000000"
+        type: string
+      saved:
+        example: "12000000"
+        type: string
+      status:
+        enum:
+        - active
+        - achieved
+        - archived
+        type: string
+      target:
+        example: "30000000"
+        type: string
+      target_date:
+        example: "2027-06-30"
+        type: string
+      updated_at:
+        type: string
+      version:
+        example: 1
+        type: integer
+    type: object
+  finance.ImportEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/finance.ImportResponse'
+    type: object
+  finance.ImportResponse:
+    properties:
+      dry_run:
+        example: true
+        type: boolean
+      duplicate_rows:
+        example:
+        - 4
+        - 9
+        items:
+          type: integer
+        type: array
+      errors:
+        items:
+          $ref: '#/definitions/finance.ImportRowError'
+        type: array
+      imported:
+        example: 120
+        type: integer
+      skipped:
+        description: Skipped = kemungkinan duplikat (hash date|amount|note|account
+          sudah ada).
+        example: 2
+        type: integer
+    type: object
+  finance.ImportRowError:
+    properties:
+      field:
+        example: amount
+        type: string
+      message:
+        example: invalid amount
+        type: string
+      row:
+        example: 3
+        type: integer
+    type: object
+  finance.MemberEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/finance.MemberResponse'
+    type: object
+  finance.MemberListEnvelope:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/finance.MemberResponse'
+        type: array
+    type: object
+  finance.MemberResponse:
+    properties:
+      account_id:
+        format: uuid
+        type: string
+      created_at:
+        type: string
+      owner_id:
+        format: uuid
+        type: string
+      role:
+        enum:
+        - viewer
+        - editor
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        format: uuid
+        type: string
+    type: object
+  finance.MoneyResponse:
+    properties:
+      amount:
+        example: "1465000"
+        type: string
+      currency:
+        example: IDR
+        type: string
+    type: object
+  finance.PauseRecurringRuleRequest:
+    properties:
+      reason:
+        example: Langganan dihentikan sementara
+        maxLength: 255
+        type: string
+    type: object
+  finance.PayBillEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/finance.PayBillResult'
+    type: object
+  finance.PayBillRequest:
+    properties:
+      account_id:
+        format: uuid
+        type: string
+      amount:
+        description: Amount kosong = nominal bill.
+        maxLength: 32
+        type: string
+      category_id:
+        format: uuid
+        type: string
+      create_transaction:
+        type: boolean
+      date:
+        example: "2026-10-20"
+        type: string
+      note:
+        maxLength: 500
+        type: string
+    type: object
+  finance.PayBillResult:
+    properties:
+      bill:
+        $ref: '#/definitions/finance.BillResponse'
+      transaction:
+        $ref: '#/definitions/finance.TransactionResponse'
+    type: object
+  finance.PayDebtRequest:
+    properties:
+      account_id:
+        format: uuid
+        type: string
+      amount:
+        example: "500000"
+        maxLength: 32
+        type: string
+      category_id:
+        format: uuid
+        type: string
+      date:
+        example: "2026-10-15"
+        type: string
+      note:
+        maxLength: 500
+        type: string
+      transaction_id:
+        format: uuid
+        type: string
+    type: object
+  finance.RateEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/finance.RateResponse'
+    type: object
+  finance.RateListEnvelope:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/finance.RateResponse'
+        type: array
+    type: object
+  finance.RateResponse:
+    properties:
+      as_of:
+        example: "2026-10-01"
+        type: string
+      base:
+        example: USD
+        type: string
+      created_at:
+        type: string
+      id:
+        format: uuid
+        type: string
+      quote:
+        example: IDR
+        type: string
+      rate:
+        example: "16250.5"
+        type: string
+    type: object
+  finance.ReconciliationEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/finance.ReconciliationResponse'
+    type: object
+  finance.ReconciliationResponse:
+    properties:
+      drifts:
+        items:
+          $ref: '#/definitions/finance.BalanceDriftResponse'
+        type: array
+      ok:
+        example: true
+        type: boolean
+    type: object
+  finance.RecurringRuleEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/finance.RecurringRuleResponse'
+    type: object
+  finance.RecurringRuleListEnvelope:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/finance.RecurringRuleResponse'
+        type: array
+      meta:
+        $ref: '#/definitions/pagination.PageMeta'
+    type: object
+  finance.RecurringRuleResponse:
+    properties:
+      account_id:
+        format: uuid
+        type: string
+      amount:
+        example: "186000"
+        type: string
+      by_month_day:
+        example: 3
+        type: integer
+      category_id:
+        format: uuid
+        type: string
+      created_at:
+        type: string
+      currency:
+        example: IDR
+        type: string
+      end_date:
+        example: "2027-10-03"
+        type: string
+      frequency:
+        enum:
+        - daily
+        - weekly
+        - monthly
+        - yearly
+        type: string
+      id:
+        format: uuid
+        type: string
+      interval:
+        example: 1
+        type: integer
+      last_run_date:
+        example: "2026-10-03"
+        type: string
+      next_run_date:
+        example: "2026-11-03"
+        type: string
+      note:
+        type: string
+      pause_reason:
+        type: string
+      start_date:
+        example: "2026-10-03"
+        type: string
+      status:
+        enum:
+        - active
+        - paused
+        - ended
+        type: string
+      type:
+        enum:
+        - income
+        - expense
+        type: string
+      upcoming:
+        example:
+        - "2026-11-03"
+        - "2026-12-03"
+        items:
+          type: string
+        type: array
+      updated_at:
+        type: string
+      version:
+        example: 1
+        type: integer
+    type: object
+  finance.SetTransactionTagsRequest:
+    properties:
+      tag_ids:
+        items:
+          format: uuid
+          type: string
+        maxItems: 10
+        type: array
+    type: object
+  finance.SettingsEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/finance.SettingsResponse'
+    type: object
+  finance.SettingsResponse:
+    properties:
+      base_currency:
+        example: IDR
+        type: string
+      timezone:
+        example: Asia/Jakarta
+        type: string
+      updated_at:
+        example: "2026-09-30T10:00:00Z"
+        type: string
+      week_start:
+        example: 1
+        type: integer
+    type: object
+  finance.SharedAccountListEnvelope:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/finance.SharedAccountResponse'
+        type: array
+    type: object
+  finance.SharedAccountResponse:
+    properties:
+      account:
+        $ref: '#/definitions/finance.AccountResponse'
+      owner_id:
+        format: uuid
+        type: string
+      role:
+        enum:
+        - viewer
+        - editor
+        type: string
+    type: object
+  finance.SummaryEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/finance.SummaryResponse'
+    type: object
+  finance.SummaryResponse:
+    properties:
+      by_category:
+        items:
+          $ref: '#/definitions/finance.CategoryShareResponse'
+        type: array
+      cashflow:
+        items:
+          $ref: '#/definitions/finance.CashflowPointResponse'
+        type: array
+      currency:
+        example: IDR
+        type: string
+      month:
+        example: 2026-09
+        type: string
+      total_balance:
+        items:
+          $ref: '#/definitions/finance.MoneyResponse'
+        type: array
+      totals:
+        items:
+          $ref: '#/definitions/finance.CurrencyTotalsResponse'
+        type: array
+    type: object
+  finance.TagEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/finance.TagResponse'
+    type: object
+  finance.TagListEnvelope:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/finance.TagResponse'
+        type: array
+    type: object
+  finance.TagResponse:
+    properties:
+      color:
+        example: '#FF8800'
+        type: string
+      created_at:
+        type: string
+      id:
+        format: uuid
+        type: string
+      name:
+        example: liburan
+        type: string
+      updated_at:
+        type: string
+    type: object
+  finance.TransactionEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/finance.TransactionResponse'
+    type: object
+  finance.TransactionListEnvelope:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/finance.TransactionResponse'
+        type: array
+      meta:
+        $ref: '#/definitions/pagination.PageMeta'
+    type: object
+  finance.TransactionResponse:
+    properties:
+      account_id:
+        example: 0192f0c1-7b3a-7c4e-9d2a-1f2e3d4c5b6a
+        format: uuid
+        type: string
+      amount:
+        example: "35000"
+        type: string
+      category_id:
+        example: 01920000-0000-7000-8000-000000000101
+        format: uuid
+        type: string
+      created_at:
+        example: "2026-09-30T10:00:00Z"
+        type: string
+      currency:
+        example: IDR
+        type: string
+      id:
+        example: 0192f0c1-7b3a-7c4e-9d2a-1f2e3d4c5b6b
+        format: uuid
+        type: string
+      note:
+        example: Makan siang
+        type: string
+      source:
+        description: Source transfer_fee = dikelola transfer (read-only).
+        enum:
+        - manual
+        - transfer_fee
+        - recurring
+        - import
+        example: manual
+        type: string
+      tags:
+        description: Tags diisi pada list & get (dimuat batch, tanpa N+1).
+        items:
+          $ref: '#/definitions/finance.TagResponse'
+        type: array
+      transaction_date:
+        example: "2026-09-30"
+        type: string
+      type:
+        enum:
+        - income
+        - expense
+        example: expense
+        type: string
+      updated_at:
+        example: "2026-09-30T10:00:00Z"
+        type: string
+      version:
+        example: 1
+        type: integer
+    type: object
+  finance.TransferEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/finance.TransferResponse'
+    type: object
+  finance.TransferListEnvelope:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/finance.TransferResponse'
+        type: array
+      meta:
+        $ref: '#/definitions/pagination.PageMeta'
+    type: object
+  finance.TransferResponse:
+    properties:
+      amount:
+        example: "500000"
+        type: string
+      created_at:
+        example: "2026-09-30T10:00:00Z"
+        type: string
+      currency:
+        example: IDR
+        type: string
+      fee:
+        example: "6500"
+        type: string
+      fee_transaction_id:
+        description: FeeTransactionID adalah expense "Biaya Admin" yang dibuat otomatis.
+        format: uuid
+        type: string
+      from_account_id:
+        example: 0192f0c1-7b3a-7c4e-9d2a-1f2e3d4c5b6a
+        format: uuid
+        type: string
+      id:
+        example: 0192f0c1-7b3a-7c4e-9d2a-1f2e3d4c5b6d
+        format: uuid
+        type: string
+      note:
+        example: Top up GoPay
+        type: string
+      to_account_id:
+        example: 0192f0c1-7b3a-7c4e-9d2a-1f2e3d4c5b6c
+        format: uuid
+        type: string
+      to_amount:
+        description: ToAmount/ToCurrency adalah nominal yang diterima akun tujuan
+          (= amount bila satu currency).
+        example: "500000"
+        type: string
+      to_currency:
+        example: IDR
+        type: string
+      transfer_date:
+        example: "2026-09-30"
+        type: string
+      updated_at:
+        example: "2026-09-30T10:00:00Z"
+        type: string
+      version:
+        example: 1
+        type: integer
+    type: object
+  finance.UpdateAccountRequest:
+    properties:
+      allow_negative:
+        example: true
+        type: boolean
+      initial_balance:
+        example: "2000000"
+        maxLength: 32
+        type: string
+      name:
+        example: BCA Utama
+        maxLength: 50
+        type: string
+    type: object
+  finance.UpdateBillRequest:
+    properties:
+      account_id:
+        format: uuid
+        type: string
+      amount:
+        maxLength: 32
+        type: string
+      category_id:
+        format: uuid
+        type: string
+      due_date:
+        example: "2026-10-25"
+        type: string
+      frequency:
+        enum:
+        - once
+        - weekly
+        - monthly
+        - yearly
+        type: string
+      name:
+        maxLength: 100
+        type: string
+      paused:
+        type: boolean
+      remind_days_before:
+        maximum: 30
+        minimum: 0
+        type: integer
+    type: object
+  finance.UpdateBudgetRequest:
+    properties:
+      alert_threshold_pct:
+        example: 90
+        maximum: 100
+        minimum: 1
+        type: integer
+      amount:
+        example: "2500000"
+        maxLength: 32
+        type: string
+    type: object
+  finance.UpdateCategoryRequest:
+    properties:
+      color:
+        example: '#6F4E37'
+        maxLength: 7
+        type: string
+      icon:
+        example: coffee
+        maxLength: 30
+        type: string
+      name:
+        example: Kopi Susu
+        maxLength: 50
+        type: string
+    type: object
+  finance.UpdateDebtRequest:
+    properties:
+      counterparty:
+        maxLength: 100
+        type: string
+      due_date:
+        example: "2026-12-31"
+        type: string
+      note:
+        maxLength: 500
+        type: string
+      principal:
+        maxLength: 32
+        type: string
+    type: object
+  finance.UpdateGoalRequest:
+    properties:
+      account_id:
+        format: uuid
+        type: string
+      archived:
+        type: boolean
+      name:
+        maxLength: 100
+        type: string
+      target:
+        maxLength: 32
+        type: string
+      target_date:
+        example: "2027-06-30"
+        type: string
+    type: object
+  finance.UpdateMemberRequest:
+    properties:
+      role:
+        enum:
+        - viewer
+        - editor
+        type: string
+    required:
+    - role
+    type: object
+  finance.UpdateRateRequest:
+    properties:
+      rate:
+        example: "16300"
+        maxLength: 32
+        type: string
+    required:
+    - rate
+    type: object
+  finance.UpdateRecurringRuleRequest:
+    properties:
+      account_id:
+        format: uuid
+        type: string
+      amount:
+        maxLength: 32
+        type: string
+      category_id:
+        format: uuid
+        type: string
+      count:
+        maximum: 1000
+        minimum: 1
+        type: integer
+      end_date:
+        maxLength: 10
+        type: string
+      frequency:
+        enum:
+        - daily
+        - weekly
+        - monthly
+        - yearly
+        type: string
+      interval:
+        maximum: 365
+        minimum: 1
+        type: integer
+      note:
+        maxLength: 255
+        type: string
+      start_date:
+        type: string
+      type:
+        enum:
+        - income
+        - expense
+        type: string
+    type: object
+  finance.UpdateSettingsRequest:
+    properties:
+      base_currency:
+        example: IDR
+        type: string
+      timezone:
+        example: Asia/Jakarta
+        maxLength: 64
+        type: string
+      week_start:
+        description: 'WeekStart: 0 = Sunday ... 6 = Saturday.'
+        example: 1
+        maximum: 6
+        minimum: 0
+        type: integer
+    required:
+    - base_currency
+    - timezone
+    - week_start
+    type: object
+  finance.UpdateTagRequest:
+    properties:
+      color:
+        example: '#00AA00'
+        maxLength: 7
+        type: string
+      name:
+        example: liburan-2026
+        maxLength: 40
+        type: string
+    type: object
+  finance.UpdateTransactionRequest:
+    properties:
+      account_id:
+        format: uuid
+        type: string
+      amount:
+        example: "40000"
+        maxLength: 32
+        type: string
+      category_id:
+        format: uuid
+        type: string
+      note:
+        example: Makan malam
+        maxLength: 1024
+        type: string
+      transaction_date:
+        example: "2026-09-29"
+        type: string
+      type:
+        enum:
+        - income
+        - expense
+        type: string
+    type: object
+  finance.UpdateTransferRequest:
+    properties:
+      amount:
+        example: "450000"
+        maxLength: 32
+        type: string
+      fee:
+        example: "0"
+        maxLength: 32
+        type: string
+      from_account_id:
+        format: uuid
+        type: string
+      note:
+        maxLength: 1024
+        type: string
+      to_account_id:
+        format: uuid
+        type: string
+      to_amount:
+        example: "31.25"
+        maxLength: 32
+        type: string
+      transfer_date:
+        example: "2026-09-30"
+        type: string
+    type: object
+  finance.YearMonthResponse:
+    properties:
+      expense:
+        example: "9000000"
+        type: string
+      income:
+        example: "15000000"
+        type: string
+      month:
+        example: 2026-01
+        type: string
+      net:
+        example: "6000000"
+        type: string
+    type: object
+  finance.YearlyEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/finance.YearlyResponse'
+    type: object
+  finance.YearlyResponse:
+    properties:
+      currency:
+        example: IDR
+        type: string
+      expense:
+        type: string
+      income:
+        type: string
+      months:
+        items:
+          $ref: '#/definitions/finance.YearMonthResponse'
+        type: array
+      net:
+        type: string
+      savings_rate:
+        example: "40.00"
+        type: string
+      unconverted:
+        description: 'Unconverted: currency tanpa kurs ke base currency (tidak ikut
+          dijumlah).'
+        items:
+          $ref: '#/definitions/finance.CurrencyTotalsResponse'
+        type: array
+      year:
+        example: 2026
+        type: integer
+    type: object
+  pagination.PageMeta:
+    properties:
+      has_more:
+        example: true
+        type: boolean
+      limit:
+        example: 20
+        type: integer
+      next_cursor:
+        example: eyJ0IjoiMjAyNi0wOS0zMFQwMDowMDowMFoiLCJpIjoiLi4uIn0
+        type: string
+    type: object
+info:
+  contact:
+    name: Backend Team
+  description: |-
+    REST API untuk autentikasi (register, login, refresh token, session) dan personal finance tracker.
+    Semua response sukses dibungkus {"data": ...}; list memakai {"data": [...], "meta": {...}}; error memakai {"error": {code, message, details}, "request_id"}.
+    Nominal uang dikirim sebagai string desimal major unit (mis. "35000" untuk IDR, "12.34" untuk USD).
+  title: Go Auth Clean API
+  version: "1.0"
+paths:
+  /accounts:
+    get:
+      description: Accounts of the current user with cached balance. Archived accounts
+        are hidden unless include_archived=true.
+      parameters:
+      - description: Include archived accounts
+        in: query
+        name: include_archived
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.AccountListEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List accounts
+      tags:
+      - accounts
+    post:
+      consumes:
+      - application/json
+      description: Creates a cash/bank/ewallet/credit_card account. Amounts are strings
+        in major units (e.g. "1500000" IDR, "12.50" USD).
+      parameters:
+      - description: Account
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.CreateAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/finance.AccountEnvelope'
+        "400":
+          description: INVALID_JSON
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: DUPLICATE_NAME
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / INVALID_AMOUNT / UNSUPPORTED_CURRENCY /
+            INSUFFICIENT_BALANCE
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create account
+      tags:
+      - accounts
+  /accounts/{id}:
+    delete:
+      description: Soft delete. Only allowed when the account has no transactions
+        or transfers; archive it otherwise.
+      parameters:
+      - description: Account ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: ACCOUNT_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: ACCOUNT_HAS_TRANSACTIONS
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete account
+      tags:
+      - accounts
+    get:
+      parameters:
+      - description: Account ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            ETag:
+              description: Current version, use with If-Match
+              type: string
+          schema:
+            $ref: '#/definitions/finance.AccountEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: ACCOUNT_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get account
+      tags:
+      - accounts
+    patch:
+      consumes:
+      - application/json
+      description: Partial update. Changing initial_balance shifts the current balance
+        by the same delta. Send If-Match with the version for optimistic locking.
+      parameters:
+      - description: Account ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Expected version, e.g. \
+        in: header
+        name: If-Match
+        type: string
+      - description: Fields to change
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.UpdateAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.AccountEnvelope'
+        "400":
+          description: INVALID_JSON / INVALID_IF_MATCH
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: ACCOUNT_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: VERSION_CONFLICT / DUPLICATE_NAME
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / INSUFFICIENT_BALANCE / ACCOUNT_ARCHIVED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update account
+      tags:
+      - accounts
+  /accounts/{id}/archive:
+    post:
+      description: Archived accounts keep their history but cannot receive new transactions
+        or transfers. Idempotent.
+      parameters:
+      - description: Account ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.AccountEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: ACCOUNT_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Archive account
+      tags:
+      - accounts
+  /accounts/{id}/members:
+    get:
+      description: Any member may list; non-members get 404.
+      parameters:
+      - description: Account ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.MemberListEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: ACCOUNT_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List account members
+      tags:
+      - account-members
+    post:
+      consumes:
+      - application/json
+      description: Owner only. Invite by user_id or email. viewer = read-only, editor
+        = may record transactions/transfers on the account.
+      parameters:
+      - description: Account ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Member
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.AddMemberRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/finance.MemberEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "403":
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: ACCOUNT_NOT_FOUND / USER_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: MEMBER_EXISTS
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / INVALID_ROLE
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Share account
+      tags:
+      - account-members
+  /accounts/{id}/members/{member_id}:
+    delete:
+      description: Owner removes any member; a member may remove itself (leave).
+      parameters:
+      - description: Account ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Member user ID
+        format: uuid
+        in: path
+        name: member_id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "403":
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: ACCOUNT_NOT_FOUND / MEMBER_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Remove member
+      tags:
+      - account-members
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Account ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Member user ID
+        format: uuid
+        in: path
+        name: member_id
+        required: true
+        type: string
+      - description: Role
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.UpdateMemberRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.MemberEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "403":
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: ACCOUNT_NOT_FOUND / MEMBER_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Change member role
+      tags:
+      - account-members
+  /accounts/{id}/unarchive:
+    post:
+      parameters:
+      - description: Account ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.AccountEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: ACCOUNT_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Unarchive account
+      tags:
+      - accounts
+  /admin/users:
+    get:
+      description: Keyset-paginated user list, newest first. q searches email/name
+        (substring), status filters by lifecycle status.
+      parameters:
+      - description: Search email or name
+        in: query
+        name: q
+        type: string
+      - description: Status filter
+        enum:
+        - pending_verification
+        - active
+        - suspended
+        in: query
+        name: status
+        type: string
+      - description: Page size (1-100, default 20)
+        in: query
+        name: limit
+        type: integer
+      - description: Opaque cursor from meta.next_cursor
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.UserListEnvelope'
+        "400":
+          description: INVALID_CURSOR / INVALID_PARAMETER
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED / SESSION_INVALID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "403":
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List users (admin)
+      tags:
+      - admin
+  /admin/users/{id}:
+    get:
+      parameters:
+      - description: User id
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.UserEnvelope'
+        "400":
+          description: INVALID_PARAMETER
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED / SESSION_INVALID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "403":
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: USER_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a user (admin)
+      tags:
+      - admin
+  /admin/users/{id}/activate:
+    post:
+      parameters:
+      - description: User id
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: INVALID_PARAMETER
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED / SESSION_INVALID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "403":
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: USER_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: CANNOT_MODIFY_SELF / INVALID_STATUS_TRANSITION
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Reactivate (unlock) a suspended user (admin)
+      tags:
+      - admin
+  /admin/users/{id}/roles:
+    post:
+      consumes:
+      - application/json
+      description: Idempotent. Granting "user" is a no-op (every user has it implicitly).
+        The new role appears in the target's access token after its next refresh.
+      parameters:
+      - description: User id
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Role
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RoleRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: INVALID_JSON / INVALID_PARAMETER
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED / SESSION_INVALID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "403":
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: USER_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / INVALID_ROLE
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Grant a role (admin)
+      tags:
+      - admin
+  /admin/users/{id}/roles/{role}:
+    delete:
+      description: Idempotent. The implicit "user" role cannot be revoked; admins
+        cannot revoke their own admin role.
+      parameters:
+      - description: User id
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Role
+        enum:
+        - admin
+        in: path
+        name: role
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: INVALID_PARAMETER
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED / SESSION_INVALID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "403":
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: USER_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: CANNOT_MODIFY_SELF
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: INVALID_ROLE
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Revoke a role (admin)
+      tags:
+      - admin
+  /admin/users/{id}/security-events:
+    get:
+      parameters:
+      - description: User id
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page size (1-100, default 20)
+        in: query
+        name: limit
+        type: integer
+      - description: Opaque cursor from meta.next_cursor
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.SecurityEventListEnvelope'
+        "400":
+          description: INVALID_CURSOR / INVALID_PARAMETER
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED / SESSION_INVALID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "403":
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: USER_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List a user's security events (admin)
+      tags:
+      - admin
+  /admin/users/{id}/suspend:
+    post:
+      description: Sets status to suspended and revokes all of the user's sessions
+        and API keys. Admins cannot suspend themselves.
+      parameters:
+      - description: User id
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: INVALID_PARAMETER
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED / SESSION_INVALID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "403":
+          description: FORBIDDEN
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: USER_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: CANNOT_MODIFY_SELF / INVALID_STATUS_TRANSITION
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Suspend (lock) a user (admin)
+      tags:
+      - admin
+  /audit-logs:
+    get:
+      description: Changes to my accounts, transactions, transfers and members (including
+        changes by members of shared accounts), newest first. Cursor-paginated.
+      parameters:
+      - description: Entity filter
+        enum:
+        - account
+        - transaction
+        - transfer
+        - account_member
+        in: query
+        name: entity
+        type: string
+      - description: Entity ID filter
+        format: uuid
+        in: query
+        name: entity_id
+        type: string
+      - description: Page size (1-100, default 20)
+        in: query
+        name: limit
+        type: integer
+      - description: next_cursor from the previous page
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.AuditLogListEnvelope'
+        "400":
+          description: INVALID_PARAMETER / INVALID_CURSOR
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List audit logs
+      tags:
+      - audit
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Returns an access token (JWT), a rotating refresh token, the device
+        session id and the user profile. Unverified accounts get 403 EMAIL_NOT_VERIFIED
+        (only after a correct password). If the account has 2FA enabled the response
+        is instead {"data":{"mfa_required":true,"mfa_token":"...","expires_at":"..."}}
+        (MFAChallengeEnvelope); continue with POST /auth/login/2fa.
+      parameters:
+      - description: Credentials
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.LoginEnvelope'
+        "400":
+          description: INVALID_JSON
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: INVALID_CREDENTIALS
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "403":
+          description: EMAIL_NOT_VERIFIED / ACCOUNT_SUSPENDED / ACCOUNT_INACTIVE
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "429":
+          description: ACCOUNT_LOCKED / RATE_LIMITED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Log in with email and password
+      tags:
+      - auth
+  /auth/login/2fa:
+    post:
+      consumes:
+      - application/json
+      description: Second login step when /auth/login answered mfa_required=true.
+        Accepts a 6-digit TOTP code or a recovery code. Failures count toward the
+        account lockout. Each mfa_token (challenge) allows at most 5 attempts; after
+        that it is invalidated (401 MFA_CHALLENGE_EXPIRED) and the client must log
+        in again.
+      parameters:
+      - description: mfa_token and code
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginMFARequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.LoginEnvelope'
+        "400":
+          description: INVALID_JSON
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: MFA_TOKEN_INVALID / INVALID_MFA_CODE / MFA_CHALLENGE_EXPIRED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "403":
+          description: ACCOUNT_SUSPENDED / ACCOUNT_INACTIVE
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "429":
+          description: ACCOUNT_LOCKED / RATE_LIMITED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Complete login with a 2FA code
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: UNAUTHENTICATED / SESSION_INVALID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Log out current session
+      tags:
+      - auth
+  /auth/logout-all:
+    post:
+      consumes:
+      - application/json
+      description: 'Revokes every session of the current user except the current one.
+        Send {"include_current": true} to also revoke the current session. Body is
+        optional.'
+      parameters:
+      - description: Options
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/auth.LogoutAllRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: INVALID_JSON
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED / SESSION_INVALID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Log out other sessions
+      tags:
+      - auth
+  /auth/oauth/exchange:
+    post:
+      consumes:
+      - application/json
+      description: Exchanges the single-use code (valid ~60s) delivered to the frontend
+        by the callback redirect. If the account has 2FA, responds with mfa_required=true
+        and an mfa_token (continue with /auth/login/2fa).
+      parameters:
+      - description: One-time code
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/auth.OAuthExchangeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.LoginEnvelope'
+        "400":
+          description: INVALID_JSON / LOGIN_CODE_INVALID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "403":
+          description: ACCOUNT_SUSPENDED / ACCOUNT_INACTIVE
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "429":
+          description: RATE_LIMITED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Exchange OAuth one-time code for tokens
+      tags:
+      - oauth
+  /auth/oauth/google/callback:
+    get:
+      description: 'Browser endpoint (redirect URI registered at Google). Verifies
+        state against the cookie, exchanges the code with the PKCE verifier and validates
+        the id_token (signature, iss, aud, exp, nonce). Always redirects (302) to
+        the frontend: login success -> <redirect>#code=<one-time code> (exchange via
+        POST /auth/oauth/exchange), link success -> ?linked=google, failure -> ?error=<CODE>.
+        An existing password account with the same email is never auto-linked (OAUTH_ACCOUNT_EXISTS).'
+      parameters:
+      - description: Authorization code
+        in: query
+        name: code
+        type: string
+      - description: State
+        in: query
+        name: state
+        required: true
+        type: string
+      - description: Error from provider
+        in: query
+        name: error
+        type: string
+      responses:
+        "302":
+          description: Found
+        "404":
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Google OAuth callback
+      tags:
+      - oauth
+  /auth/oauth/google/start:
+    get:
+      description: Browser endpoint. Redirects (302) to Google with state, PKCE S256
+        code_challenge and nonce; these are kept in an encrypted HttpOnly cookie.
+        Returns 404 when Google OAuth is not configured.
+      responses:
+        "302":
+          description: Found
+        "404":
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Start Google sign-in
+      tags:
+      - oauth
+  /auth/password/forgot:
+    post:
+      consumes:
+      - application/json
+      description: Always returns 202 (does not reveal whether the email exists).
+        Sends a 6-digit reset code to active accounts.
+      parameters:
+      - description: Email
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/auth.EmailRequest'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/auth.AcceptedEnvelope'
+        "400":
+          description: INVALID_JSON
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "429":
+          description: RATE_LIMITED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Request password reset code
+      tags:
+      - auth
+  /auth/password/reset:
+    post:
+      consumes:
+      - application/json
+      description: Sets a new password using the reset code and revokes ALL sessions
+        of the user.
+      parameters:
+      - description: Email, code and new password
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/auth.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: INVALID_OTP / OTP_EXPIRED / INVALID_JSON
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / WEAK_PASSWORD
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "429":
+          description: OTP_TOO_MANY_ATTEMPTS / RATE_LIMITED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Reset password with OTP
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Exchanges a refresh token for a new token pair. Reusing an already
+        rotated refresh token revokes the whole device session (401 TOKEN_REUSED).
+      parameters:
+      - description: Refresh token
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RefreshRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.TokenEnvelope'
+        "400":
+          description: INVALID_JSON
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: SESSION_INVALID / TOKEN_REUSED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "429":
+          description: RATE_LIMITED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Rotate refresh token
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Creates an account with status pending_verification and emails
+        a 6-digit verification code. The user must verify before logging in.
+      parameters:
+      - description: Registration payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/auth.UserEnvelope'
+        "400":
+          description: INVALID_JSON
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: EMAIL_TAKEN
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / INVALID_EMAIL / WEAK_PASSWORD / INVALID_FULL_NAME
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "429":
+          description: RATE_LIMITED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Register a new user
+      tags:
+      - auth
+  /auth/verify-email:
+    post:
+      consumes:
+      - application/json
+      description: 'Activates a pending account using the 6-digit code sent by email.
+        Idempotent: an already active account returns already_verified=true.'
+      parameters:
+      - description: Email and code
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/auth.VerifyEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.VerifyEmailEnvelope'
+        "400":
+          description: INVALID_OTP / OTP_EXPIRED / INVALID_JSON
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "429":
+          description: OTP_TOO_MANY_ATTEMPTS / RATE_LIMITED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Verify email with OTP
+      tags:
+      - auth
+  /auth/verify-email/resend:
+    post:
+      consumes:
+      - application/json
+      description: Always returns 202 (does not reveal whether the email exists).
+        A new code is sent only for pending accounts, subject to a cooldown and a
+        daily quota; the previous code is invalidated.
+      parameters:
+      - description: Email
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/auth.EmailRequest'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/auth.AcceptedEnvelope'
+        "400":
+          description: INVALID_JSON
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "429":
+          description: RATE_LIMITED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Resend email verification code
+      tags:
+      - auth
+  /auth/whoami:
+    get:
+      description: 'Returns the authenticated principal. Accepts an access token OR
+        an API key (`X-API-Key: <key>` or `Authorization: ApiKey <key>`); useful to
+        test an API key. API keys need the read scope here.'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.WhoAmIEnvelope'
+        "401":
+          description: UNAUTHENTICATED / SESSION_INVALID / API_KEY_INVALID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "403":
+          description: INSUFFICIENT_SCOPE
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "429":
+          description: RATE_LIMITED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      - ApiKeyAuth: []
+      summary: Identify the caller
+      tags:
+      - auth
+  /bills:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.BillListEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List bills
+      tags:
+      - bills
+    post:
+      consumes:
+      - application/json
+      description: Recurring bill reminder. The worker sends due_soon remind_days_before
+        the due date and overdue once past it.
+      parameters:
+      - description: Bill
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.CreateBillRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/finance.BillEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: ACCOUNT_NOT_FOUND / CATEGORY_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / INVALID_FREQUENCY
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create bill
+      tags:
+      - bills
+  /bills/{id}:
+    delete:
+      parameters:
+      - description: Bill ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: BILL_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete bill
+      tags:
+      - bills
+    get:
+      parameters:
+      - description: Bill ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.BillEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: BILL_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get bill
+      tags:
+      - bills
+    patch:
+      consumes:
+      - application/json
+      description: '"" on account_id/category_id clears the default. paused=true pauses
+        reminders.'
+      parameters:
+      - description: Bill ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Expected version
+        in: header
+        name: If-Match
+        type: string
+      - description: Fields to change
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.UpdateBillRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.BillEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: BILL_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: VERSION_CONFLICT
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / BILL_DONE
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update bill
+      tags:
+      - bills
+  /bills/{id}/pay:
+    post:
+      consumes:
+      - application/json
+      description: Advances next_due_date by the frequency (once = done). create_transaction=true
+        records an expense. Requires Idempotency-Key.
+      parameters:
+      - description: Bill ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Unique key per logical request (8-128 chars)
+        in: header
+        name: Idempotency-Key
+        required: true
+        type: string
+      - description: Payment options
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/finance.PayBillRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.PayBillEnvelope'
+        "400":
+          description: IDEMPOTENCY_KEY_REQUIRED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: BILL_NOT_FOUND / ACCOUNT_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: BILL_DONE / VALIDATION_FAILED / INSUFFICIENT_BALANCE
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Mark bill paid
+      tags:
+      - bills
+  /budgets:
+    get:
+      description: Budgets of a month with progress. spent = expense of the category
+        and its sub categories in the budget currency, computed on read.
+      parameters:
+      - description: Month (YYYY-MM), default current month in user timezone
+        in: query
+        name: month
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.BudgetListEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List budgets
+      tags:
+      - budgets
+    post:
+      consumes:
+      - application/json
+      description: Monthly budget for an expense category. Unique per (category, month).
+        Requires Idempotency-Key.
+      parameters:
+      - description: Unique key per logical request (8-128 chars)
+        in: header
+        name: Idempotency-Key
+        required: true
+        type: string
+      - description: Budget
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.CreateBudgetRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/finance.BudgetEnvelope'
+        "400":
+          description: INVALID_JSON / IDEMPOTENCY_KEY_REQUIRED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: CATEGORY_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: BUDGET_EXISTS / IDEMPOTENCY_IN_PROGRESS
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / CATEGORY_TYPE_MISMATCH / INVALID_AMOUNT
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create budget
+      tags:
+      - budgets
+  /budgets/{id}:
+    delete:
+      parameters:
+      - description: Budget ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: BUDGET_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete budget
+      tags:
+      - budgets
+    get:
+      parameters:
+      - description: Budget ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.BudgetEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: BUDGET_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get budget progress
+      tags:
+      - budgets
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Budget ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Expected version
+        in: header
+        name: If-Match
+        type: string
+      - description: Fields to change
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.UpdateBudgetRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.BudgetEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: BUDGET_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: VERSION_CONFLICT
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / INVALID_AMOUNT
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update budget
+      tags:
+      - budgets
+  /categories:
+    get:
+      description: 'Category tree (root categories with their children): system categories
+        plus the user''s custom ones.'
+      parameters:
+      - description: Filter by type
+        enum:
+        - income
+        - expense
+        in: query
+        name: type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.CategoryTreeEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: INVALID_TYPE
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List categories
+      tags:
+      - categories
+    post:
+      consumes:
+      - application/json
+      description: 'Creates a custom category. parent_id must be a root category (system
+        or own) of the same type: only one nesting level.'
+      parameters:
+      - description: Category
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.CreateCategoryRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/finance.CategoryEnvelope'
+        "400":
+          description: INVALID_JSON
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: CATEGORY_NOT_FOUND (parent)
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: DUPLICATE_NAME
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / CATEGORY_NESTING_TOO_DEEP / CATEGORY_TYPE_MISMATCH
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create category
+      tags:
+      - categories
+  /categories/{id}:
+    delete:
+      description: Soft deletes a custom category. If transactions still use it, pass
+        reassign_to to move them to another category of the same type first.
+      parameters:
+      - description: Category ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Target category for existing transactions
+        format: uuid
+        in: query
+        name: reassign_to
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: INVALID_PARAMETER
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: CATEGORY_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: CATEGORY_IN_USE / CATEGORY_HAS_CHILDREN
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: CATEGORY_READ_ONLY / INVALID_REASSIGN_TARGET
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete category
+      tags:
+      - categories
+    get:
+      parameters:
+      - description: Category ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.CategoryEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: CATEGORY_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get category
+      tags:
+      - categories
+    patch:
+      consumes:
+      - application/json
+      description: Renames or restyles a custom category. System categories are read-only.
+      parameters:
+      - description: Category ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Fields to change
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.UpdateCategoryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.CategoryEnvelope'
+        "400":
+          description: INVALID_JSON
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: CATEGORY_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: DUPLICATE_NAME
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / CATEGORY_READ_ONLY
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update category
+      tags:
+      - categories
+  /currencies:
+    get:
+      description: Currencies with their minor unit (number of decimals used by amount
+        strings).
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.CurrencyListEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List supported currencies
+      tags:
+      - settings
+  /debts:
+    get:
+      parameters:
+      - description: Filter status
+        enum:
+        - open
+        - settled
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.DebtListEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List debts and receivables
+      tags:
+      - debts
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Debt
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.CreateDebtRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/finance.DebtEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / INVALID_AMOUNT
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create debt or receivable
+      tags:
+      - debts
+  /debts/{id}:
+    delete:
+      parameters:
+      - description: Debt ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: DEBT_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete debt
+      tags:
+      - debts
+    get:
+      parameters:
+      - description: Debt ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.DebtEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: DEBT_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get debt
+      tags:
+      - debts
+    patch:
+      consumes:
+      - application/json
+      description: due_date "" clears the due date. Changing principal re-evaluates
+        settled status.
+      parameters:
+      - description: Debt ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Expected version
+        in: header
+        name: If-Match
+        type: string
+      - description: Fields to change
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.UpdateDebtRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.DebtEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: DEBT_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: VERSION_CONFLICT
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / OVERPAYMENT
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update debt
+      tags:
+      - debts
+  /debts/{id}/payments:
+    get:
+      parameters:
+      - description: Debt ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.DebtPaymentListEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: DEBT_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List debt payments
+      tags:
+      - debts
+    post:
+      consumes:
+      - application/json
+      description: Partial payments allowed; status becomes settled when paid = principal.
+        transaction_id links an existing transaction; account_id (+ category_id) creates
+        one (expense for payable, income for receivable). Requires Idempotency-Key.
+      parameters:
+      - description: Debt ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Unique key per logical request (8-128 chars)
+        in: header
+        name: Idempotency-Key
+        required: true
+        type: string
+      - description: Payment
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.PayDebtRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/finance.DebtPaymentEnvelope'
+        "400":
+          description: IDEMPOTENCY_KEY_REQUIRED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: DEBT_NOT_FOUND / ACCOUNT_NOT_FOUND / TRANSACTION_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: DUPLICATE_LINK
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: OVERPAYMENT / DEBT_SETTLED / VALIDATION_FAILED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Record debt payment
+      tags:
+      - debts
+  /debts/{id}/payments/{pid}:
+    delete:
+      description: The linked transaction (if any) is kept; delete it separately.
+      parameters:
+      - description: Debt ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Payment ID
+        format: uuid
+        in: path
+        name: pid
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: DEBT_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete debt payment
+      tags:
+      - debts
+  /exchange-rates:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.RateListEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List exchange rates
+      tags:
+      - exchange-rates
+    post:
+      consumes:
+      - application/json
+      description: 'Manual rate: 1 base = rate quote, valid from as_of. The inverse
+        pair is derived automatically when missing.'
+      parameters:
+      - description: Rate
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.CreateRateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/finance.RateEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: RATE_EXISTS
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / UNSUPPORTED_CURRENCY
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create exchange rate
+      tags:
+      - exchange-rates
+  /exchange-rates/{id}:
+    delete:
+      parameters:
+      - description: Rate ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: RATE_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete exchange rate
+      tags:
+      - exchange-rates
+    get:
+      parameters:
+      - description: Rate ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.RateEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: RATE_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get exchange rate
+      tags:
+      - exchange-rates
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Rate ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: New rate
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.UpdateRateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.RateEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: RATE_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update exchange rate value
+      tags:
+      - exchange-rates
+  /exchange-rates/convert:
+    get:
+      description: Converts using the latest rate with as_of <= date (direct, inverse,
+        or via base currency).
+      parameters:
+      - description: Amount in major units
+        example: "100"
+        in: query
+        name: amount
+        required: true
+        type: string
+      - description: Source currency
+        example: USD
+        in: query
+        name: from
+        required: true
+        type: string
+      - description: Target currency, default base currency
+        in: query
+        name: to
+        type: string
+      - description: Rate date (YYYY-MM-DD), default today
+        in: query
+        name: date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.ConvertEnvelope'
+        "400":
+          description: INVALID_PARAMETER
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: RATE_UNAVAILABLE / VALIDATION_FAILED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Convert amount
+      tags:
+      - exchange-rates
+  /recurring-rules:
+    get:
+      description: Newest first (created_at, id DESC), cursor paginated.
+      parameters:
+      - description: Page size (1-100, default 20)
+        in: query
+        name: limit
+        type: integer
+      - description: Opaque cursor from meta.next_cursor
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.RecurringRuleListEnvelope'
+        "400":
+          description: INVALID_PARAMETER / INVALID_CURSOR
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List recurring rules
+      tags:
+      - recurring-rules
+    post:
+      consumes:
+      - application/json
+      description: Template transaction generated by a background worker on each occurrence
+        (idempotent per rule + date). Monthly/yearly rules anchor on the start_date
+        day, clamped to month end. Use end_date or count (not both). Requires Idempotency-Key.
+      parameters:
+      - description: Unique key per logical request (8-128 chars)
+        in: header
+        name: Idempotency-Key
+        required: true
+        type: string
+      - description: Rule
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.CreateRecurringRuleRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/finance.RecurringRuleEnvelope'
+        "400":
+          description: INVALID_JSON / IDEMPOTENCY_KEY_REQUIRED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: ACCOUNT_NOT_FOUND / CATEGORY_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: IDEMPOTENCY_IN_PROGRESS
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / INVALID_FREQUENCY / CATEGORY_TYPE_MISMATCH
+            / ACCOUNT_ARCHIVED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create recurring rule
+      tags:
+      - recurring-rules
+  /recurring-rules/{id}:
+    delete:
+      description: Stops future occurrences. Transactions already generated are kept.
+      parameters:
+      - description: Rule ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: RECURRING_RULE_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete recurring rule
+      tags:
+      - recurring-rules
+    get:
+      parameters:
+      - description: Rule ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.RecurringRuleEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: RECURRING_RULE_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get recurring rule
+      tags:
+      - recurring-rules
+    patch:
+      consumes:
+      - application/json
+      description: Partial update. Changing the schedule recomputes next_run_date
+        (never before the last run). end_date "" removes the end date.
+      parameters:
+      - description: Rule ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Expected version
+        in: header
+        name: If-Match
+        type: string
+      - description: Fields to change
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.UpdateRecurringRuleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.RecurringRuleEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: RECURRING_RULE_NOT_FOUND / ACCOUNT_NOT_FOUND / CATEGORY_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: VERSION_CONFLICT
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / RULE_ENDED / INVALID_FREQUENCY
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update recurring rule
+      tags:
+      - recurring-rules
+  /recurring-rules/{id}/pause:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Rule ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Optional reason
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/finance.PauseRecurringRuleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.RecurringRuleEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: RECURRING_RULE_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: RULE_ENDED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Pause recurring rule
+      tags:
+      - recurring-rules
+  /recurring-rules/{id}/resume:
+    post:
+      description: Continues from today; occurrences missed while paused are skipped.
+      parameters:
+      - description: Rule ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.RecurringRuleEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: RECURRING_RULE_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: RULE_ENDED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Resume recurring rule
+      tags:
+      - recurring-rules
+  /reports/cashflow:
+    get:
+      description: 'Income/expense/net per day or month, including empty periods.
+        Defaults: current month (day) or last 12 months (month). Max 366 days / 120
+        months.'
+      parameters:
+      - description: From date (YYYY-MM-DD)
+        format: date
+        in: query
+        name: from
+        type: string
+      - description: To date (YYYY-MM-DD), inclusive
+        format: date
+        in: query
+        name: to
+        type: string
+      - description: Granularity (default month)
+        enum:
+        - day
+        - month
+        in: query
+        name: granularity
+        type: string
+      - description: Currency (default base currency)
+        in: query
+        name: currency
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.CashflowEnvelope'
+        "400":
+          description: INVALID_PARAMETER / INVALID_RANGE
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / UNSUPPORTED_CURRENCY
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Cashflow series
+      tags:
+      - reports
+  /reports/categories:
+    get:
+      description: 'Totals per root category (sub categories rolled up) with percentage
+        share. Default range: current month to date.'
+      parameters:
+      - description: From date (YYYY-MM-DD)
+        format: date
+        in: query
+        name: from
+        type: string
+      - description: To date (YYYY-MM-DD), inclusive
+        format: date
+        in: query
+        name: to
+        type: string
+      - description: Type (default expense)
+        enum:
+        - income
+        - expense
+        in: query
+        name: type
+        type: string
+      - description: Currency (default base currency)
+        in: query
+        name: currency
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.CategoryReportEnvelope'
+        "400":
+          description: INVALID_PARAMETER / INVALID_RANGE
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: INVALID_TYPE / UNSUPPORTED_CURRENCY
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Category breakdown
+      tags:
+      - reports
+  /reports/reconciliation:
+    get:
+      description: 'Recomputes every account balance from its history and reports
+        accounts whose cached balance differs. Read-only: nothing is fixed automatically.'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.ReconciliationEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Balance reconciliation
+      tags:
+      - reports
+  /reports/summary:
+    get:
+      description: Total balance per currency, income vs expense per currency, expense
+        breakdown by root category and daily cashflow for one month in the user's
+        timezone. Transfers are excluded; transfer fees count as expense.
+      parameters:
+      - description: 'Month YYYY-MM (default: current month in user''s timezone)'
+        in: query
+        name: month
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.SummaryEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Monthly dashboard
+      tags:
+      - reports
+  /reports/yearly:
+    get:
+      description: Per-month income/expense/net in the base currency; other currencies
+        converted with the user's rates. Currencies without any rate are listed in
+        unconverted.
+      parameters:
+      - description: Year, default current year
+        example: 2026
+        in: query
+        name: year
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.YearlyEnvelope'
+        "400":
+          description: INVALID_PARAMETER
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Yearly report
+      tags:
+      - reports
+  /savings-goals:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.GoalListEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List savings goals
+      tags:
+      - savings-goals
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Goal
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.CreateGoalRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/finance.GoalEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: ACCOUNT_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: DUPLICATE_NAME
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / INVALID_AMOUNT
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create savings goal
+      tags:
+      - savings-goals
+  /savings-goals/{id}:
+    delete:
+      parameters:
+      - description: Goal ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: GOAL_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete savings goal
+      tags:
+      - savings-goals
+    get:
+      parameters:
+      - description: Goal ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.GoalEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: GOAL_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get savings goal progress
+      tags:
+      - savings-goals
+    patch:
+      consumes:
+      - application/json
+      description: Empty string on target_date/account_id clears the value. archived=true
+        archives the goal.
+      parameters:
+      - description: Goal ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Expected version
+        in: header
+        name: If-Match
+        type: string
+      - description: Fields to change
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.UpdateGoalRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.GoalEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: GOAL_NOT_FOUND / ACCOUNT_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: VERSION_CONFLICT / DUPLICATE_NAME
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update savings goal
+      tags:
+      - savings-goals
+  /savings-goals/{id}/contributions:
+    get:
+      parameters:
+      - description: Goal ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.ContributionListEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: GOAL_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List goal contributions
+      tags:
+      - savings-goals
+    post:
+      consumes:
+      - application/json
+      description: Links a transfer into the goal account (amount taken from the transfer)
+        or records a standalone deposit (amount + date). Status becomes achieved once
+        saved >= target.
+      parameters:
+      - description: Goal ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Contribution
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.ContributeRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/finance.ContributionEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: GOAL_NOT_FOUND / TRANSFER_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: DUPLICATE_LINK
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / GOAL_ARCHIVED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Add contribution
+      tags:
+      - savings-goals
+  /savings-goals/{id}/contributions/{cid}:
+    delete:
+      parameters:
+      - description: Goal ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Contribution ID
+        format: uuid
+        in: path
+        name: cid
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: GOAL_NOT_FOUND / CONTRIBUTION_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete contribution
+      tags:
+      - savings-goals
+  /savings-goals/{id}/withdrawals:
+    post:
+      consumes:
+      - application/json
+      description: Records a withdrawal (negative contribution). Linking a transfer
+        out of the goal account is supported too.
+      parameters:
+      - description: Goal ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Withdrawal
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.ContributeRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/finance.ContributionEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: GOAL_NOT_FOUND / TRANSFER_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: DUPLICATE_LINK
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / GOAL_ARCHIVED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Withdraw from goal
+      tags:
+      - savings-goals
+  /settings:
+    get:
+      description: Returns the user's finance preferences. Created lazily with server
+        defaults on first access.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.SettingsEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get finance settings
+      tags:
+      - settings
+    put:
+      consumes:
+      - application/json
+      description: Replaces base currency, IANA timezone and week start. Timezone
+        controls "today" and monthly report boundaries.
+      parameters:
+      - description: Settings
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.UpdateSettingsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.SettingsEnvelope'
+        "400":
+          description: INVALID_JSON / INVALID_TIMEZONE
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / UNSUPPORTED_CURRENCY / INVALID_WEEK_START
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update finance settings
+      tags:
+      - settings
+  /shared-accounts:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.SharedAccountListEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List accounts shared with me
+      tags:
+      - account-members
+  /tags:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.TagListEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List tags
+      tags:
+      - tags
+    post:
+      consumes:
+      - application/json
+      description: 'Name is unique per user (case-insensitive), max 30 characters;
+        a leading # is stripped. Color #RRGGBB.'
+      parameters:
+      - description: Tag
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.CreateTagRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/finance.TagEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: DUPLICATE_NAME
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create tag
+      tags:
+      - tags
+  /tags/{id}:
+    delete:
+      description: Deletes the tag and detaches it from all transactions.
+      parameters:
+      - description: Tag ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: TAG_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete tag
+      tags:
+      - tags
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Tag ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Fields to change
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.UpdateTagRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.TagEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: TAG_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: DUPLICATE_NAME
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update tag
+      tags:
+      - tags
+  /transactions:
+    get:
+      description: Income/expense transactions, newest first (transaction_date, id
+        DESC), cursor paginated. Dates are inclusive. Repeat account_id / category_id
+        for multiple values. A cursor is bound to the filter it was issued for.
+      parameters:
+      - description: From date (YYYY-MM-DD)
+        format: date
+        in: query
+        name: from
+        type: string
+      - description: To date (YYYY-MM-DD)
+        format: date
+        in: query
+        name: to
+        type: string
+      - description: Type
+        enum:
+        - income
+        - expense
+        in: query
+        name: type
+        type: string
+      - collectionFormat: multi
+        description: Account IDs
+        in: query
+        items:
+          type: string
+        name: account_id
+        type: array
+      - collectionFormat: multi
+        description: Category IDs
+        in: query
+        items:
+          type: string
+        name: category_id
+        type: array
+      - description: Also match sub categories of category_id
+        in: query
+        name: include_children
+        type: boolean
+      - description: Minimum amount (major units)
+        in: query
+        name: min_amount
+        type: string
+      - description: Maximum amount (major units)
+        in: query
+        name: max_amount
+        type: string
+      - description: Currency for amount filters (default base currency)
+        in: query
+        name: currency
+        type: string
+      - description: Search in note
+        in: query
+        name: q
+        type: string
+      - description: Tag name (case-insensitive)
+        in: query
+        name: tag
+        type: string
+      - description: Page size (1-100, default 20)
+        in: query
+        name: limit
+        type: integer
+      - description: Opaque cursor from meta.next_cursor
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.TransactionListEnvelope'
+        "400":
+          description: INVALID_PARAMETER / INVALID_CURSOR / INVALID_RANGE
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / INVALID_AMOUNT
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List transactions
+      tags:
+      - transactions
+    post:
+      consumes:
+      - application/json
+      description: 'Records income/expense and updates the account balance atomically.
+        Requires an Idempotency-Key header: retrying with the same key and body returns
+        the original response (header Idempotent-Replayed: true); the same key with
+        a different body is rejected.'
+      parameters:
+      - description: Unique key per logical request (8-128 chars), e.g. a UUID
+        in: header
+        name: Idempotency-Key
+        required: true
+        type: string
+      - description: Transaction
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.CreateTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          headers:
+            Idempotent-Replayed:
+              description: true when the response is a replay
+              type: string
+          schema:
+            $ref: '#/definitions/finance.TransactionEnvelope'
+        "400":
+          description: INVALID_JSON / IDEMPOTENCY_KEY_REQUIRED / INVALID_IDEMPOTENCY_KEY
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: ACCOUNT_NOT_FOUND / CATEGORY_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: IDEMPOTENCY_IN_PROGRESS
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / INSUFFICIENT_BALANCE / CURRENCY_MISMATCH
+            / CATEGORY_TYPE_MISMATCH / ACCOUNT_ARCHIVED / DATE_IN_FUTURE / IDEMPOTENCY_KEY_REUSED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create transaction
+      tags:
+      - transactions
+  /transactions/{id}:
+    delete:
+      description: Soft deletes the transaction and reverts its effect on the account
+        balance.
+      parameters:
+      - description: Transaction ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: TRANSACTION_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: VERSION_CONFLICT
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: INSUFFICIENT_BALANCE / MANAGED_BY_TRANSFER / ACCOUNT_ARCHIVED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete transaction
+      tags:
+      - transactions
+    get:
+      parameters:
+      - description: Transaction ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            ETag:
+              description: Current version, use with If-Match
+              type: string
+          schema:
+            $ref: '#/definitions/finance.TransactionEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: TRANSACTION_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get transaction
+      tags:
+      - transactions
+    patch:
+      consumes:
+      - application/json
+      description: Partial update; balances of the old and new account are adjusted
+        in the same DB transaction. Transfer fee transactions are read-only (edit
+        the transfer).
+      parameters:
+      - description: Transaction ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Expected version, e.g. \
+        in: header
+        name: If-Match
+        type: string
+      - description: Fields to change
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.UpdateTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.TransactionEnvelope'
+        "400":
+          description: INVALID_JSON / INVALID_IF_MATCH / INVALID_PARAMETER
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: TRANSACTION_NOT_FOUND / ACCOUNT_NOT_FOUND / CATEGORY_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: VERSION_CONFLICT
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / INSUFFICIENT_BALANCE / MANAGED_BY_TRANSFER
+            / ACCOUNT_ARCHIVED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update transaction
+      tags:
+      - transactions
+  /transactions/{id}/tags:
+    put:
+      consumes:
+      - application/json
+      description: Replaces all tags of a transaction (max 10). An empty list removes
+        all tags.
+      parameters:
+      - description: Transaction ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Tag IDs
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.SetTransactionTagsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.TagListEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: TRANSACTION_NOT_FOUND / TAG_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / TOO_MANY_TAGS
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Replace transaction tags
+      tags:
+      - transactions
+  /transactions/export:
+    get:
+      description: 'Streams all transactions matching the same filters as GET /transactions
+        (no paging), oldest first. Columns: date,type,amount,currency,account,category,note,tags
+        (tags separated by ";"). Cells starting with = + - @ are prefixed with ''
+        to prevent formula injection.'
+      parameters:
+      - description: From date (YYYY-MM-DD)
+        format: date
+        in: query
+        name: from
+        type: string
+      - description: To date (YYYY-MM-DD)
+        format: date
+        in: query
+        name: to
+        type: string
+      - description: Type
+        enum:
+        - income
+        - expense
+        in: query
+        name: type
+        type: string
+      - collectionFormat: multi
+        description: Account IDs
+        in: query
+        items:
+          type: string
+        name: account_id
+        type: array
+      - collectionFormat: multi
+        description: Category IDs
+        in: query
+        items:
+          type: string
+        name: category_id
+        type: array
+      - description: Tag name
+        in: query
+        name: tag
+        type: string
+      - description: Search in note
+        in: query
+        name: q
+        type: string
+      - description: Only csv is supported
+        enum:
+        - csv
+        in: query
+        name: format
+        type: string
+      produces:
+      - text/csv
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "400":
+          description: INVALID_PARAMETER / INVALID_RANGE
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Export transactions as CSV
+      tags:
+      - transactions
+  /transactions/import:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Multipart upload (field "file", max 5 MB / 10,000 rows) in the
+        export format; account and category may be names or IDs, currency and tags
+        optional (tags must exist). Rows are validated individually; possible duplicates
+        (same date, amount, note and account as an earlier import) are skipped. With
+        dry_run=true nothing is written. All valid rows are committed in one DB transaction.
+      parameters:
+      - description: CSV file
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: Validate only
+        in: query
+        name: dry_run
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: dry run
+          schema:
+            $ref: '#/definitions/finance.ImportEnvelope'
+        "201":
+          description: imported
+          schema:
+            $ref: '#/definitions/finance.ImportEnvelope'
+        "400":
+          description: INVALID_PARAMETER / INVALID_CSV_HEADER
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "413":
+          description: IMPORT_TOO_LARGE
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: IMPORT_TOO_MANY_ROWS / VALIDATION_FAILED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Import transactions from CSV
+      tags:
+      - transactions
+  /transfers:
+    get:
+      description: Transfers between the user's accounts, newest first, cursor paginated.
+        Transfers are not counted as income/expense in reports.
+      parameters:
+      - description: From date (YYYY-MM-DD)
+        format: date
+        in: query
+        name: from
+        type: string
+      - description: To date (YYYY-MM-DD)
+        format: date
+        in: query
+        name: to
+        type: string
+      - description: Source or destination account
+        format: uuid
+        in: query
+        name: account_id
+        type: string
+      - description: Page size (1-100, default 20)
+        in: query
+        name: limit
+        type: integer
+      - description: Opaque cursor from meta.next_cursor
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.TransferListEnvelope'
+        "400":
+          description: INVALID_PARAMETER / INVALID_CURSOR / INVALID_RANGE
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List transfers
+      tags:
+      - transfers
+    post:
+      consumes:
+      - application/json
+      description: Moves money between two of the user's accounts (same currency)
+        atomically. An optional fee is recorded as an expense ("Biaya Admin") on the
+        source account. Requires an Idempotency-Key header (same semantics as POST
+        /transactions).
+      parameters:
+      - description: Unique key per logical request (8-128 chars), e.g. a UUID
+        in: header
+        name: Idempotency-Key
+        required: true
+        type: string
+      - description: Transfer
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.CreateTransferRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          headers:
+            Idempotent-Replayed:
+              description: true when the response is a replay
+              type: string
+          schema:
+            $ref: '#/definitions/finance.TransferEnvelope'
+        "400":
+          description: INVALID_JSON / IDEMPOTENCY_KEY_REQUIRED / INVALID_IDEMPOTENCY_KEY
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: ACCOUNT_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: IDEMPOTENCY_IN_PROGRESS
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / SAME_ACCOUNT_TRANSFER / INSUFFICIENT_BALANCE
+            / CURRENCY_MISMATCH / ACCOUNT_ARCHIVED / IDEMPOTENCY_KEY_REUSED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create transfer
+      tags:
+      - transfers
+  /transfers/{id}:
+    delete:
+      description: Soft deletes the transfer (and its fee transaction) and reverts
+        both legs.
+      parameters:
+      - description: Transfer ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: TRANSFER_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: VERSION_CONFLICT
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: INSUFFICIENT_BALANCE / ACCOUNT_ARCHIVED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete transfer
+      tags:
+      - transfers
+    get:
+      parameters:
+      - description: Transfer ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            ETag:
+              description: Current version, use with If-Match
+              type: string
+          schema:
+            $ref: '#/definitions/finance.TransferEnvelope'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: TRANSFER_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get transfer
+      tags:
+      - transfers
+    patch:
+      consumes:
+      - application/json
+      description: Partial update; all affected balances (up to 4 accounts) are adjusted
+        in one DB transaction. fee "0" removes the fee transaction.
+      parameters:
+      - description: Transfer ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Expected version, e.g. \
+        in: header
+        name: If-Match
+        type: string
+      - description: Fields to change
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/finance.UpdateTransferRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/finance.TransferEnvelope'
+        "400":
+          description: INVALID_JSON / INVALID_IF_MATCH / INVALID_PARAMETER
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: TRANSFER_NOT_FOUND / ACCOUNT_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: VERSION_CONFLICT
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / SAME_ACCOUNT_TRANSFER / INSUFFICIENT_BALANCE
+            / CURRENCY_MISMATCH
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update transfer
+      tags:
+      - transfers
+  /users/me:
+    delete:
+      consumes:
+      - application/json
+      description: 'Soft-deletes the account after password re-authentication: personal
+        data is anonymized, all sessions are revoked, and the email can be registered
+        again.'
+      parameters:
+      - description: Current password
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/auth.DeleteAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: INVALID_JSON
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: INVALID_CREDENTIALS / UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "429":
+          description: ACCOUNT_LOCKED / RATE_LIMITED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete current account
+      tags:
+      - users
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.UserEnvelope'
+        "401":
+          description: UNAUTHENTICATED / SESSION_INVALID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: USER_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get current user profile
+      tags:
+      - users
+    patch:
+      consumes:
+      - application/json
+      description: Partial update. Only fields present in the body are changed. Email
+        cannot be changed here.
+      parameters:
+      - description: Fields to update
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/auth.UpdateProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.UserEnvelope'
+        "400":
+          description: INVALID_JSON / NO_FIELDS_TO_UPDATE
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED / SESSION_INVALID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / INVALID_FULL_NAME
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update current user profile
+      tags:
+      - users
+  /users/me/2fa:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.MFAStatusEnvelope'
+        "401":
+          description: UNAUTHENTICATED / SESSION_INVALID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get 2FA status
+      tags:
+      - 2fa
+  /users/me/2fa/disable:
+    post:
+      consumes:
+      - application/json
+      description: Requires the current password AND a TOTP or recovery code. Other
+        sessions are revoked.
+      parameters:
+      - description: Password and code
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/auth.DisableMFARequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: INVALID_JSON
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: INVALID_CREDENTIALS / INVALID_MFA_CODE / UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: MFA_NOT_ENABLED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "429":
+          description: RATE_LIMITED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Disable 2FA
+      tags:
+      - 2fa
+  /users/me/2fa/enable:
+    post:
+      consumes:
+      - application/json
+      description: Verifies the first code from the authenticator app, enables 2FA,
+        and returns 10 single-use recovery codes (shown only once; stored hashed).
+        Other sessions are revoked.
+      parameters:
+      - description: TOTP code
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/auth.MFACodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.RecoveryCodesEnvelope'
+        "400":
+          description: INVALID_JSON
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: INVALID_MFA_CODE / UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: MFA_SETUP_REQUIRED / MFA_ALREADY_ENABLED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "429":
+          description: RATE_LIMITED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Confirm and enable 2FA
+      tags:
+      - 2fa
+  /users/me/2fa/recovery-codes:
+    post:
+      consumes:
+      - application/json
+      description: Replaces all recovery codes (requires a current TOTP code). The
+        new codes are shown only once.
+      parameters:
+      - description: TOTP code
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/auth.MFACodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.RecoveryCodesEnvelope'
+        "400":
+          description: INVALID_JSON
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: INVALID_MFA_CODE / UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: MFA_NOT_ENABLED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "429":
+          description: RATE_LIMITED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Regenerate recovery codes
+      tags:
+      - 2fa
+  /users/me/2fa/setup:
+    post:
+      description: Generates a new TOTP secret (stored encrypted, status pending)
+        and returns it with an otpauth:// URI to render as a QR code. Calling again
+        replaces a pending secret.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.MFASetupEnvelope'
+        "401":
+          description: UNAUTHENTICATED / SESSION_INVALID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: MFA_ALREADY_ENABLED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Start 2FA enrollment
+      tags:
+      - 2fa
+  /users/me/api-keys:
+    get:
+      description: Returns metadata of the current user's API keys (never the secret).
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.APIKeyListEnvelope'
+        "401":
+          description: UNAUTHENTICATED / SESSION_INVALID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List API keys
+      tags:
+      - api-keys
+    post:
+      consumes:
+      - application/json
+      description: 'Creates a key in the format gac_<env>_<prefix>_<secret>. The full
+        key is returned ONLY in this response; the server stores just the prefix and
+        a SHA-256 hash. Send it as `X-API-Key: <key>` or `Authorization: ApiKey <key>`.'
+      parameters:
+      - description: Name, scopes, expiry
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/auth.CreateAPIKeyRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/auth.CreatedAPIKeyEnvelope'
+        "400":
+          description: INVALID_JSON
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED / SESSION_INVALID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: API_KEY_LIMIT
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / INVALID_API_KEY_NAME / INVALID_SCOPE /
+            INVALID_EXPIRY
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create an API key
+      tags:
+      - api-keys
+  /users/me/api-keys/{id}:
+    delete:
+      description: Revokes one of the current user's API keys immediately. Keys of
+        other users return 404.
+      parameters:
+      - description: API key id
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: INVALID_PARAMETER
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED / SESSION_INVALID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: API_KEY_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Revoke an API key
+      tags:
+      - api-keys
+  /users/me/identities:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.IdentityListEnvelope'
+        "401":
+          description: UNAUTHENTICATED / SESSION_INVALID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List linked external accounts
+      tags:
+      - oauth
+  /users/me/identities/google/link:
+    post:
+      description: Returns the Google consent URL for the logged-in user and sets
+        the encrypted flow cookie (call with credentials). After consent the callback
+        links the identity and redirects to the frontend with ?linked=google.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.OAuthStartEnvelope'
+        "401":
+          description: UNAUTHENTICATED / SESSION_INVALID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Start linking a Google account
+      tags:
+      - oauth
+  /users/me/password:
+    put:
+      consumes:
+      - application/json
+      description: Changes the password (requires the current one). Other sessions
+        are revoked; the current session stays logged in. Also available as POST.
+      parameters:
+      - description: Old and new password
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/auth.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: INVALID_JSON
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: INVALID_CREDENTIALS / UNAUTHENTICATED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "422":
+          description: VALIDATION_FAILED / WEAK_PASSWORD / PASSWORD_REUSED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "429":
+          description: ACCOUNT_LOCKED / RATE_LIMITED
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Change password
+      tags:
+      - users
+  /users/me/security-events:
+    get:
+      description: Audit trail of the current user's security events (logins, password
+        changes, ...), newest first, cursor paginated.
+      parameters:
+      - description: Page size (1-100, default 20)
+        in: query
+        name: limit
+        type: integer
+      - description: Opaque cursor from meta.next_cursor
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.SecurityEventListEnvelope'
+        "400":
+          description: INVALID_CURSOR / INVALID_PARAMETER
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED / SESSION_INVALID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List security events
+      tags:
+      - users
+  /users/me/sessions:
+    get:
+      description: Returns the active device sessions of the current user, newest
+        first. current=true marks the session making this request.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.SessionListEnvelope'
+        "401":
+          description: UNAUTHENTICATED / SESSION_INVALID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List active sessions (devices)
+      tags:
+      - users
+  /users/me/sessions/{id}:
+    delete:
+      description: Revokes one of the current user's sessions. Sessions of other users
+        return 404.
+      parameters:
+      - description: Session id
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: INVALID_PARAMETER
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: UNAUTHENTICATED / SESSION_INVALID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: SESSION_NOT_FOUND
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Revoke a session (device)
+      tags:
+      - users
+produces:
+- application/json
+schemes:
+- http
+- https
+securityDefinitions:
+  ApiKeyAuth:
+    description: API key (gac_<env>_<prefix>_<secret>) dari POST /users/me/api-keys.
+      Hanya untuk endpoint yang mencantumkan ApiKeyAuth.
+    in: header
+    name: X-API-Key
+    type: apiKey
+  BearerAuth:
+    description: Type 'Bearer <token>' (access token dari /auth/login).
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
