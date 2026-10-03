@@ -23,6 +23,9 @@ jobs:
       - uses: golangci/golangci-lint-action@v8
         with:
           version: v2.3.0
+          # Binary rilis golangci-lint di-build dengan Go lebih lama dari go.mod (1.26);
+          # goinstall mem-build dari source memakai Go hasil setup-go.
+          install-mode: goinstall
 
   unit:
     runs-on: ubuntu-latest
