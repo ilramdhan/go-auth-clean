@@ -57,8 +57,8 @@ func CORS(cfg CORSConfig) Middleware {
 		allowed[strings.TrimRight(o, "/")] = struct{}{}
 	}
 	methods := strings.Join(orDefault(cfg.AllowedMethods, []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"}), ", ")
-	headers := strings.Join(orDefault(cfg.AllowedHeaders, []string{"Authorization", "Content-Type", "Idempotency-Key", "X-Request-ID"}), ", ")
-	exposed := strings.Join(orDefault(cfg.ExposedHeaders, []string{"X-Request-ID", "Retry-After", "RateLimit-Limit", "RateLimit-Remaining"}), ", ")
+	headers := strings.Join(orDefault(cfg.AllowedHeaders, []string{"Authorization", "Content-Type", "Idempotency-Key", "If-Match", "X-API-Key", "X-Request-ID"}), ", ")
+	exposed := strings.Join(orDefault(cfg.ExposedHeaders, []string{"X-Request-ID", "Retry-After", "RateLimit-Limit", "RateLimit-Remaining", "ETag", "Idempotent-Replayed", "Content-Disposition"}), ", ")
 	maxAge := strconv.Itoa(int(cfg.MaxAge.Seconds()))
 	if cfg.MaxAge == 0 {
 		maxAge = "600"
